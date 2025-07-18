@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".", 
+    "paths": {
+      "@config/*": ["src/config/*"],
+      "@modules/*": ["src/modules/*"],
+      "@utils/*": ["src/utils/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@jobs/*": ["src/jobs/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
+// This file is used to configure the JavaScript project, including module resolution and path aliases.
+// It helps in organizing the codebase and making imports cleaner and more manageable.
+// The `baseUrl` is set to the root of the project, and various path aliases are defined for easier imports.
+// The `exclude` field ensures that certain directories, like `node_modules` and `dist`, are not included in the project context, which can help with performance and clarity.
+// This configuration is particularly useful in larger projects where managing imports can become cumbersome without such aliases.
+// The `paths` field allows you to define custom module paths, making it easier to import modules without relative paths.
+// For example, instead of using `import { someFunction } from '../../utils/someFunction';`, you can use `import { someFunction } from '@utils/someFunction';`.
+// This improves code readability and maintainability, especially in larger codebases with deep directory structures.
+// The `exclude` field is important to prevent unnecessary files from being included in the project, which
+// can lead to performance issues and clutter in the development environment.
+// It ensures that only relevant source files are considered, making the development process smoother and more efficient.
