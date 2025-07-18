@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { logger } = require('./logger');
 
-const customerDashboardUri = 'mongodb+srv://anandhost:DYNGf7KKE0dGFs9Z@recluster.dawqed5.mongodb.net/remoteengine-customer-dashboard';
+const customerDashboardUri = process.env.CUSTOMER_DASHBOARD_URI;
 
 const customerDashboardConnection = mongoose.createConnection(customerDashboardUri, {
   maxPoolSize: 10,
