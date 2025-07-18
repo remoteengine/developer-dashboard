@@ -7,7 +7,8 @@ const {
   uploadEducationInfoDocuments
 } = require('../../../../middleware/uploadMiddleware');
 const {
-  validateProfileUpdate
+  validateProfileUpdate,
+  validatePersonalInfoUpdateWithFiles
 } = require('../../validators');
 
 userRoute.get('/', userController.getUserById);
@@ -27,6 +28,7 @@ userRoute.patch(
 userRoute.patch(
   '/update-personal-info',
   uploadPersonalInfoDocuments,
+  validatePersonalInfoUpdateWithFiles,
   userController.updatePersonalInfoWithFiles
 );
 
