@@ -916,6 +916,45 @@ const validatePersonalInfoUpdateWithFiles = [
     .isLength({ min: 2, max: 50 })
     .withMessage('Bank account provider name must be between 2 and 50 characters'),
 
+  body('bankDetails.accountHolderName')
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage('Account holder name must be a non-empty string')
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Account holder name must be between 2 and 50 characters'),
+
+  body('bankDetails.accountType')
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage('Account type must be a non-empty string')
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Account type must be between 2 and 50 characters'),
+
+  body('bankDetails.bankAddress')
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage('Bank address must be a non-empty string')
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Bank address must be between 2 and 50 characters'),
+
+  body('bankDetails.micr')
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage('MICR must be a non-empty string')
+    .isLength({ min: 9, max: 9 })
+    .withMessage('MICR must be 9 digits'),
+
+  body('bankDetails.panNumber')
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage('PAN number must be a non-empty string')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('PAN number must be 10 digits'),
   handleValidationErrors
 ];
 
