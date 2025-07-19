@@ -124,6 +124,16 @@ const handleValidationError = error => {
       data: null
     };
   }
+
+  // Handle MongoDB duplicate key error (E11000)
+  if (error.code === 11000) {
+    const field = Object.keys(error.keyPattern)[0];
+    const value = error.keyValue[field];
+    return createErrorResponse(
+      `${field} '${value}' already exists. Please use a different value.`
+    );
+  }
+
   return createErrorResponse('Error processing request', error.message);
 };
 
