@@ -102,6 +102,10 @@ const formatDeveloperData = userData => ({
     professionalBackground: userData.professionalBackground || [],
     educationalBackground: userData.educationalBackground || [],
     projects: userData.projects || [],
+    bankDetails: userData.bankDetails || {},
+    address: userData.address || {},
+    panCard: userData.panCard || {},
+    uaid: userData.uaid || {},
 
     resumeUrl: userData.resumeUrl || '',
     linkedinUrl: userData.linkedinUrl || '',
@@ -145,8 +149,17 @@ const getUserById = async userId => {
       return createErrorResponse('User not found');
     }
 
+    // Fetch address for the user
+    const address = await Address.findOne({ userId, isActive: true });
+
     const sanitizedUserData = sanitizeUserData(user);
     const formattedData = formatDeveloperData(sanitizedUserData);
+
+    // Add address to the response if it exists
+    if (address) {
+      const sanitizedAddress = sanitizeAddressData(address);
+      formattedData.address = sanitizedAddress;
+    }
 
     return createSuccessResponse('User retrieved successfully', formattedData);
   } catch (error) {
