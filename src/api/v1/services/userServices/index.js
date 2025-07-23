@@ -876,9 +876,47 @@ const updateExperienceInfoWithFiles = async (userId, updateData, files) => {
         }
       }
 
+      // Add support for paySlip
+      if (files.paySlip && files.paySlip[0]) {
+        const paySlipFile = files.paySlip[0];
+        try {
+          const uploadResult = await uploadFileToS3(
+            paySlipFile.buffer,
+            paySlipFile.originalname,
+            paySlipFile.mimetype,
+            'documents/payslip',
+            userId
+          );
+          uploadedFiles.paySlip = uploadResult.fileUrl;
+        } catch (error) {
+          return createErrorResponse(
+            `Failed to upload pay slip: ${error.message}`
+          );
+        }
+      }
+
+      // Add support for appointmentLetter
+      if (files.appointmentLetter && files.appointmentLetter[0]) {
+        const appointmentLetterFile = files.appointmentLetter[0];
+        try {
+          const uploadResult = await uploadFileToS3(
+            appointmentLetterFile.buffer,
+            appointmentLetterFile.originalname,
+            appointmentLetterFile.mimetype,
+            'documents/appointment',
+            userId
+          );
+          uploadedFiles.appointmentLetter = uploadResult.fileUrl;
+        } catch (error) {
+          return createErrorResponse(
+            `Failed to upload appointment letter: ${error.message}`
+          );
+        }
+      }
+
       for (const fileKey of Object.keys(files)) {
         const indexMatch = fileKey.match(
-          /^(experienceLetter|relievingLetter|certificate)_(\d+)$/
+          /^(experienceLetter|relievingLetter|certificate|paySlip|appointmentLetter)_(\d+)$/
         );
         if (indexMatch) {
           const [, fileType, index] = indexMatch;
@@ -892,6 +930,12 @@ const updateExperienceInfoWithFiles = async (userId, updateData, files) => {
               }
               if (fileType === 'relievingLetter') {
                 folderName = 'documents/relieving';
+              }
+              if (fileType === 'paySlip') {
+                folderName = 'documents/payslip';
+              }
+              if (fileType === 'appointmentLetter') {
+                folderName = 'documents/appointment';
               }
 
               const uploadResult = await uploadFileToS3(

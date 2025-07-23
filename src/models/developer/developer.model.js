@@ -58,7 +58,9 @@ const developerSchema = new Schema({
       isPresentCompany: Boolean,
       experienceLetter: String,
       relievingLetter: String,
-      certificate: String
+      certificate: String,
+      paySlip: String,
+      appointmentLetter: String
     }
   ],
 

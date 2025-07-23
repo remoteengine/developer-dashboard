@@ -1260,6 +1260,16 @@ const validateExperienceInfoUpdateWithFiles = [
     .isString()
     .withMessage('Certificate must be a string (URL or file path)'),
 
+  body('professionalBackground.*.appointmentLetter')
+    .optional()
+    .isString()
+    .withMessage('Appointment letter must be a string (URL or file path)'),
+
+  body('professionalBackground.*.paySlip')
+    .optional()
+    .isString()
+    .withMessage('Pay slip must be a string (URL or file path)'),
+
   body('professionalInfoSaved')
     .optional()
     .isBoolean()

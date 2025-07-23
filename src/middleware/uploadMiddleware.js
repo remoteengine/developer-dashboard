@@ -58,6 +58,8 @@ const uploadExperienceInfoDocuments = upload.fields([
   { name: 'experienceLetter', maxCount: 1 },
   { name: 'relievingLetter', maxCount: 1 },
   { name: 'certificate', maxCount: 1 },
+  { name: 'paySlip', maxCount: 1 },
+  { name: 'appointmentLetter', maxCount: 1 }, // Added appointmentLetter
   // Support indexed files for multiple uploads
   { name: 'experienceLetter_0', maxCount: 1 },
   { name: 'experienceLetter_1', maxCount: 1 },
@@ -73,7 +75,17 @@ const uploadExperienceInfoDocuments = upload.fields([
   { name: 'certificate_1', maxCount: 1 },
   { name: 'certificate_2', maxCount: 1 },
   { name: 'certificate_3', maxCount: 1 },
-  { name: 'certificate_4', maxCount: 1 }
+  { name: 'certificate_4', maxCount: 1 },
+  { name: 'paySlip_0', maxCount: 1 },
+  { name: 'paySlip_1', maxCount: 1 },
+  { name: 'paySlip_2', maxCount: 1 },
+  { name: 'paySlip_3', maxCount: 1 },
+  { name: 'paySlip_4', maxCount: 1 },
+  { name: 'appointmentLetter_0', maxCount: 1 }, // Added indexed appointmentLetter
+  { name: 'appointmentLetter_1', maxCount: 1 },
+  { name: 'appointmentLetter_2', maxCount: 1 },
+  { name: 'appointmentLetter_3', maxCount: 1 },
+  { name: 'appointmentLetter_4', maxCount: 1 }
 ]);
 
 // Middleware for education info with documents
