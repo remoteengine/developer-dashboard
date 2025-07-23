@@ -19,14 +19,14 @@ Content-Type: multipart/form-data
 
 ### Form Data Fields
 
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `phoneNumber` | text | No | User's phone number |
-| `uaid` | file | No | UAID document (PDF, DOC, DOCX, JPG, PNG) |
-| `panCard` | file | No | PAN card document (PDF, DOC, DOCX, JPG, PNG) |
-| `profilePicture` | file | No | Profile picture (JPG, PNG, GIF) |
-| `bankDetails` | text (JSON) | No | Bank details as JSON string |
-| `address` | text (JSON) | No | Address details as JSON string |
+| Field Name       | Type        | Required | Description                                  |
+| ---------------- | ----------- | -------- | -------------------------------------------- |
+| `phoneNumber`    | text        | No       | User's phone number                          |
+| `uaid`           | file        | No       | UAID document (PDF, DOC, DOCX, JPG, PNG)     |
+| `panCard`        | file        | No       | PAN card document (PDF, DOC, DOCX, JPG, PNG) |
+| `profilePicture` | file        | No       | Profile picture (JPG, PNG, GIF)              |
+| `bankDetails`    | text (JSON) | No       | Bank details as JSON string                  |
+| `address`        | text (JSON) | No       | Address details as JSON string               |
 
 ### Supported File Types
 
@@ -46,26 +46,33 @@ const formData = new FormData();
 formData.append('phoneNumber', '+919876543210');
 
 // Add JSON data as strings
-formData.append('bankDetails', JSON.stringify({
-  accountNumber: 123456789012,
-  ifsc: "HDFC0001234",
-  branchName: "HDFC - MG Road",
-  bankAccountProvider: "HDFC Bank"
-}));
+formData.append(
+  'bankDetails',
+  JSON.stringify({
+    accountNumber: 123456789012,
+    ifsc: 'HDFC0001234',
+    branchName: 'HDFC - MG Road',
+    bankAccountProvider: 'HDFC Bank'
+  })
+);
 
-formData.append('address', JSON.stringify({
-  address: "456 Oak Avenue",
-  city: "Los Angeles",
-  state: "California",
-  country: "United States",
-  district: "NewYork",
-  zipCode: "90210"
-}));
+formData.append(
+  'address',
+  JSON.stringify({
+    address: '456 Oak Avenue',
+    city: 'Los Angeles',
+    state: 'California',
+    country: 'United States',
+    district: 'NewYork',
+    zipCode: '90210'
+  })
+);
 
 // Add files
 const uaidFile = document.getElementById('uaidFile').files[0];
 const panCardFile = document.getElementById('panCardFile').files[0];
-const profilePictureFile = document.getElementById('profilePictureFile').files[0];
+const profilePictureFile =
+  document.getElementById('profilePictureFile').files[0];
 
 if (uaidFile) formData.append('uaid', uaidFile);
 if (panCardFile) formData.append('panCard', panCardFile);
@@ -75,18 +82,18 @@ if (profilePictureFile) formData.append('profilePicture', profilePictureFile);
 fetch('/api/v1/user/update-personal-info-with-files', {
   method: 'PATCH',
   headers: {
-    'Authorization': 'Bearer your-jwt-token-here'
+    Authorization: 'Bearer your-jwt-token-here'
     // Note: Don't set Content-Type header, let browser set it automatically for multipart/form-data
   },
   body: formData
 })
-.then(response => response.json())
-.then(data => {
-  console.log('Success:', data);
-})
-.catch(error => {
-  console.error('Error:', error);
-});
+  .then(response => response.json())
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
 ```
 
 ### cURL Example
@@ -109,7 +116,7 @@ curl -X PATCH \
 2. **URL**: `http://localhost:3000/api/v1/user/update-personal-info-with-files`
 3. **Headers**:
    - `Authorization: Bearer your-jwt-token-here`
-4. **Body**: 
+4. **Body**:
    - Select "form-data"
    - Add text fields: `phoneNumber`, `bankDetails`, `address`
    - Add file fields: `uaid`, `panCard`, `profilePicture`
@@ -242,32 +249,35 @@ const PersonalInfoForm = () => {
   });
   const [files, setFiles] = useState({});
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    
+
     const submitData = new FormData();
-    
+
     // Add text data
     submitData.append('phoneNumber', formData.phoneNumber);
     submitData.append('bankDetails', JSON.stringify(formData.bankDetails));
     submitData.append('address', JSON.stringify(formData.address));
-    
+
     // Add files
     Object.keys(files).forEach(key => {
       if (files[key]) {
         submitData.append(key, files[key]);
       }
     });
-    
+
     try {
-      const response = await fetch('/api/v1/user/update-personal-info-with-files', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: submitData
-      });
-      
+      const response = await fetch(
+        '/api/v1/user/update-personal-info-with-files',
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          body: submitData
+        }
+      );
+
       const result = await response.json();
       console.log('Success:', result);
     } catch (error) {
@@ -281,27 +291,31 @@ const PersonalInfoForm = () => {
         type="text"
         placeholder="Phone Number"
         value={formData.phoneNumber}
-        onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+        onChange={e =>
+          setFormData({ ...formData, phoneNumber: e.target.value })
+        }
       />
-      
+
       <input
         type="file"
         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-        onChange={(e) => setFiles({...files, uaid: e.target.files[0]})}
+        onChange={e => setFiles({ ...files, uaid: e.target.files[0] })}
       />
-      
+
       <input
         type="file"
         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-        onChange={(e) => setFiles({...files, panCard: e.target.files[0]})}
+        onChange={e => setFiles({ ...files, panCard: e.target.files[0] })}
       />
-      
+
       <input
         type="file"
         accept=".jpg,.jpeg,.png,.gif"
-        onChange={(e) => setFiles({...files, profilePicture: e.target.files[0]})}
+        onChange={e =>
+          setFiles({ ...files, profilePicture: e.target.files[0] })
+        }
       />
-      
+
       <button type="submit">Update Profile</button>
     </form>
   );
@@ -335,4 +349,4 @@ remoteengineprod/
 └── profiles/
     └── {userId}/
         └── profile_{timestamp}.{extension}
-``` 
+```

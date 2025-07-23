@@ -5,26 +5,29 @@
 ## Scenario 1: User Registers but DOESN'T Verify OTP
 
 ### Step 1: Register
+
 ```bash
 POST /api/v1/auth/register/email
 {
   "email": "test@example.com",
   "firstName": "John",
-  "lastName": "Doe", 
+  "lastName": "Doe",
   "password": "SecurePass123!"
 }
 ```
 
 **Result:**
+
 - ✅ User stored in MongoDB: `{ email: "test@example.com", isVerified: false }`
 - ✅ OTP stored in Redis: `otp:register:test@example.com` (10 min TTL)
 - ✅ OTP sent via email
 
 ### Step 2: Check Database
+
 ```javascript
 // MongoDB Query
-db.users.find({ email: "test@example.com" })
-// Result: { 
+db.users.find({ email: 'test@example.com' });
+// Result: {
 //   _id: ObjectId("..."),
 //   email: "test@example.com",
 //   firstName: "John",
@@ -35,6 +38,7 @@ db.users.find({ email: "test@example.com" })
 ```
 
 ### Step 3: Try to Login (Should Fail)
+
 ```bash
 POST /api/v1/auth/login/email
 {
@@ -44,21 +48,24 @@ POST /api/v1/auth/login/email
 ```
 
 **Result:**
+
 - ❌ Login fails (user not verified)
 - 🔒 User cannot access the system
 
 ### Step 4: Wait 10 Minutes (OTP Expires)
+
 ```javascript
 // Redis Check
 REDIS> GET otp:register:test@example.com
 // Result: (nil) - OTP expired
 
-// MongoDB Check  
+// MongoDB Check
 db.users.find({ email: "test@example.com" })
 // Result: User still exists but isVerified: false
 ```
 
 **Final State After Registration Only:**
+
 - ✅ User exists in MongoDB (unverified)
 - ❌ Cannot login or access system
 - ❌ OTP expired - needs new OTP to verify
@@ -68,9 +75,11 @@ db.users.find({ email: "test@example.com" })
 ## Scenario 2: User Registers and VERIFIES OTP
 
 ### Step 1: Register (same as above)
+
 - ✅ User in MongoDB with `isVerified: false`
 
 ### Step 2: Verify OTP
+
 ```bash
 POST /api/v1/auth/verify-email
 {
@@ -80,18 +89,20 @@ POST /api/v1/auth/verify-email
 ```
 
 **Result:**
+
 - ✅ User's `isVerified` status updated to `true` in MongoDB
 - ✅ OTP data deleted from Redis
 - ✅ Welcome email sent
 - ✅ JWT tokens returned for immediate login
 
 ### Step 3: Check Database
+
 ```javascript
 // MongoDB Query
-db.users.find({ email: "test@example.com" })
-// Result: { 
+db.users.find({ email: 'test@example.com' });
+// Result: {
 //   _id: ObjectId("..."),
-//   email: "test@example.com", 
+//   email: "test@example.com",
 //   firstName: "John",
 //   lastName: "Doe",
 //   isVerified: true,  // ← NOW VERIFIED!
@@ -100,6 +111,7 @@ db.users.find({ email: "test@example.com" })
 ```
 
 **Final State:**
+
 - ✅ User verified and can login
 - ✅ Full system access granted
 - ✅ Welcome email sent
@@ -109,9 +121,11 @@ db.users.find({ email: "test@example.com" })
 ## Scenario 3: User Registers Twice (Duplicate Email)
 
 ### Step 1: First Registration
+
 - ✅ User created with `isVerified: false`
 
 ### Step 2: Try to Register Again (Before Verification)
+
 ```bash
 POST /api/v1/auth/register/email
 {
@@ -123,22 +137,25 @@ POST /api/v1/auth/register/email
 ```
 
 **Result:**
+
 - ✅ No duplicate user created
 - ✅ New OTP sent to existing unverified user
 - ✅ Response: "User already registered but not verified. OTP sent again."
 
 ### Step 3: Try to Register After Verification
+
 ```bash
 POST /api/v1/auth/register/email
 {
   "email": "test@example.com",  // Same email (verified user)
   "firstName": "Jane",
-  "lastName": "Smith", 
+  "lastName": "Smith",
   "password": "DifferentPass456!"
 }
 ```
 
 **Result:**
+
 - ❌ Registration rejected
 - ❌ Error: "User already exists with this email"
 
@@ -147,11 +164,13 @@ POST /api/v1/auth/register/email
 ## Admin Management Scenarios
 
 ### Check Unverified Users
+
 ```bash
 GET /api/v1/auth/admin/unverified-users
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -161,7 +180,7 @@ GET /api/v1/auth/admin/unverified-users
         "_id": "60d5ecb54f8db2001c8b4567",
         "email": "unverified1@example.com",
         "firstName": "John",
-        "lastName": "Doe", 
+        "lastName": "Doe",
         "createdAt": "2023-06-25T10:30:00.000Z"
       }
     ],
@@ -171,11 +190,13 @@ GET /api/v1/auth/admin/unverified-users
 ```
 
 ### Cleanup Old Unverified Users
+
 ```bash
 DELETE /api/v1/auth/admin/cleanup-unverified?hours=24
 ```
 
 **Result:**
+
 - ✅ Removes unverified users older than 24 hours
 - ✅ Returns count of deleted users
 - 🧹 Keeps database clean
@@ -193,16 +214,16 @@ DELETE /api/v1/auth/admin/cleanup-unverified?hours=24
 
 ## Database States Summary
 
-| User State | In Database | isVerified | Can Login | Actions Available |
-|------------|-------------|------------|-----------|------------------|
-| **Not Registered** | ❌ No | N/A | ❌ No | Register |
-| **Registered, Unverified** | ✅ Yes | `false` | ❌ No | Verify OTP, Resend OTP |
-| **Registered, Verified** | ✅ Yes | `true` | ✅ Yes | Login, Full Access |
-| **Old Unverified** | ❌ Cleaned up | N/A | ❌ No | Register Again |
+| User State                 | In Database   | isVerified | Can Login | Actions Available      |
+| -------------------------- | ------------- | ---------- | --------- | ---------------------- |
+| **Not Registered**         | ❌ No         | N/A        | ❌ No     | Register               |
+| **Registered, Unverified** | ✅ Yes        | `false`    | ❌ No     | Verify OTP, Resend OTP |
+| **Registered, Verified**   | ✅ Yes        | `true`     | ✅ Yes    | Login, Full Access     |
+| **Old Unverified**         | ❌ Cleaned up | N/A        | ❌ No     | Register Again         |
 
 ## Redis Usage (Simplified)
 
 - **Only for OTP storage** (10 min TTL)
-- **No user data in Redis** 
+- **No user data in Redis**
 - **Automatic OTP cleanup**
-- **No manual Redis management needed** 
+- **No manual Redis management needed**
