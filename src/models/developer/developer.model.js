@@ -187,7 +187,7 @@ const developerSchema = new Schema({
     bankAccountProvider: String,
     bankAddress: String,
     micr: String,
-    panNumber: String
+    taxNumber: String
   }
 });
 

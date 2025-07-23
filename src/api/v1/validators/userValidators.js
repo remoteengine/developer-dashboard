@@ -946,13 +946,11 @@ const validatePersonalInfoUpdateWithFiles = [
     .isLength({ min: 9, max: 9 })
     .withMessage('MICR must be 9 digits'),
 
-  body('bankDetails.panNumber')
+  body('bankDetails.taxNumber')
     .optional()
     .isString()
     .notEmpty()
-    .withMessage('PAN number must be a non-empty string')
-    .isLength({ min: 10, max: 10 })
-    .withMessage('PAN number must be 10 digits'),
+    .withMessage('Tax number must be a non-empty string'),
   handleValidationErrors
 ];
 
