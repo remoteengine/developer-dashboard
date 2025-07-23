@@ -4,10 +4,11 @@ const developer = require('../../../../models/developer/developer.model');
 const { ApiError } = require('../../../../utils/errorHandler');
 const otpService = require('../../../../utils/otpService');
 const { addEmailJob } = require('../../../../jobs/emailQueue');
+const customerDashboardConnection = require('../../../../config/customerDashboardDb');
+const { logger } = require('../../../../config/logger');
 const {
   generateWelcomeEmail
 } = require('../../../../utils/emailService/emailTemplateService');
-
 const findOrCreateUser = async (profile, accessToken, refreshToken) => {
   const existingUser = await User.findOne({
     'googleAuth.googleId': profile.id
@@ -240,13 +241,19 @@ const emailLoginService = async ({ email, password }) => {
     user.loginBy = 'email';
     await user.save();
 
+    const isEorEmployed = await IsEorEmployed(user.email);
+
+    if (isEorEmployed) {
+      user.isEorEmployed = true;
+    }
+
     const userResponse = {
       userId: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       userType: user.userType,
-      profilePicture: user.profilePicture
+      isEorEmployed: user.isEorEmployed
     };
 
     return userResponse;
@@ -315,6 +322,29 @@ const resetPasswordService = async ({ email, otp, newPassword }) => {
     };
   } catch (error) {
     throw new ApiError(error.message || 'Password reset failed', 400);
+  }
+};
+
+const IsEorEmployed = async email => {
+  if (customerDashboardConnection.readyState !== 1) {
+    await new Promise((resolve, reject) => {
+      customerDashboardConnection.once('connected', resolve);
+      customerDashboardConnection.once('error', reject);
+    });
+  }
+  const collection = customerDashboardConnection.db.collection('eorrequests');
+  try {
+    const eorRequest = await collection.findOne({ email: email });
+    if (eorRequest) {
+      logger.info(`EOR request found for email: ${email}`);
+      return true;
+    } else {
+      logger.info(`No EOR request found for email: ${email}`);
+      return false;
+    }
+  } catch (err) {
+    logger.error(`Error retrieving EOR request: ${err}`);
+    throw err;
   }
 };
 

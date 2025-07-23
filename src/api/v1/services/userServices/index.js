@@ -600,7 +600,20 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
                 uploadedAt: new Date(),
                 isVerified: false
               };
-              existingUser.documents.push(newDoc);
+              // Check if a document with the same category exists
+              const existingDocIndex = (existingUser.documents || []).findIndex(
+                doc => doc.category === newDoc.category
+              );
+              if (existingDocIndex !== -1) {
+                // Update the existing document
+                existingUser.documents[existingDocIndex] = {
+                  ...existingUser.documents[existingDocIndex],
+                  ...newDoc
+                };
+              } else {
+                // Add as new document
+                existingUser.documents.push(newDoc);
+              }
             }
           }
         }

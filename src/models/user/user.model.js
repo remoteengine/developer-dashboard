@@ -71,11 +71,6 @@ const userSchema = new Schema(
       }
     },
 
-    profilePicture: {
-      type: String,
-      default: null
-    },
-
     isVerified: {
       type: Boolean,
       default: false
@@ -94,6 +89,11 @@ const userSchema = new Schema(
     lastLogin: {
       type: Date,
       default: null
+    },
+
+    isEorEmployed: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

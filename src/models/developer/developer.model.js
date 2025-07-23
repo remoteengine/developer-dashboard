@@ -129,11 +129,6 @@ const developerSchema = new Schema({
     }
   ],
 
-  eorEmployed: {
-    type: Boolean,
-    default: false
-  },
-
   codingPlatform: {
     link: String
   },
