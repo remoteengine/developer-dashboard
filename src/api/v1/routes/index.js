@@ -6,10 +6,13 @@ const { verifyAccessTokenMiddleware } = require('../../../utils/jwtService');
 const { logger } = require('../../../config/logger');
 const authRoutes = require('./authRoute/index');
 const userRoutes = require('./userRoute/index');
+const sharedRoutes = require('./sharedRoute/index');
 
 router.use('/auth', authRoutes);
 
 router.use('/user', verifyAccessTokenMiddleware, userRoutes);
+
+router.use('/shared', verifyAccessTokenMiddleware, sharedRoutes);
 
 router.get('/healthcheck', (req, res) => {
   logger.info('Inside healthCheck');
@@ -23,4 +26,3 @@ router.get('/healthcheck', (req, res) => {
 
 module.exports = router;
 // This file serves as the main entry point for all API routes.
-

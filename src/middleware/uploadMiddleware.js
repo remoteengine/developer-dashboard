@@ -50,11 +50,8 @@ const upload = multer({
 });
 
 // Middleware for personal info with documents
-const uploadPersonalInfoDocuments = upload.fields([
-  { name: 'uaid', maxCount: 1 },
-  { name: 'panCard', maxCount: 1 },
-  { name: 'profilePicture', maxCount: 1 }
-]);
+// Accept any document key dynamically (except profilePicture)
+const uploadPersonalInfoDocuments = upload.any();
 
 // Middleware for experience info with documents
 const uploadExperienceInfoDocuments = upload.fields([

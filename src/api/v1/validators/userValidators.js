@@ -52,8 +52,7 @@ const VALID_DEVELOPER_FIELDS = [
   'mostExperiencedRole',
   'lookingForJob',
   'interestedFullTime',
-  'uaid',
-  'panCard',
+  'documents',
   'bankDetails',
   'address'
 ];
@@ -96,7 +95,7 @@ const validateUpdateData = (req, res, next) => {
 };
 
 // Parse JSON fields in form-data (for file uploads)
-const parseJsonFields = (fields) => (req, res, next) => {
+const parseJsonFields = fields => (req, res, next) => {
   fields.forEach(field => {
     if (req.body[field] && typeof req.body[field] === 'string') {
       try {
@@ -250,32 +249,20 @@ const validatePersonalInfoUpdate = [
     .isBoolean()
     .withMessage('EOR employed must be a boolean'),
 
-  body('uaid')
+  body('documents')
     .optional()
-    .isString()
-    .withMessage('UAID must be a string')
-    .custom((value) => {
-      // Allow both URLs and plain text/file paths
-      if (value && value.startsWith('http')) {
-        const urlRegex = /^https?:\/\/.+/;
-        if (!urlRegex.test(value)) {
-          throw new Error('UAID must be a valid URL when starting with http');
+    .isArray()
+    .withMessage('Documents must be an array')
+    .custom((documents) => {
+      if (!Array.isArray(documents)) { return true; } // handled by isArray
+      for (const doc of documents) {
+        if (typeof doc !== 'object' || doc === null) {
+          throw new Error('Each document must be an object');
         }
-      }
-      return true;
-    }),
-
-  body('panCard')
-    .optional()
-    .isString()
-    .withMessage('panCard must be a string')
-    .custom((value) => {
-      // Allow both URLs and plain text/file paths
-      if (value && value.startsWith('http')) {
-        const urlRegex = /^https?:\/\/.+/;
-        if (!urlRegex.test(value)) {
-          throw new Error('panCard must be a valid URL when starting with http');
-        }
+        if (!doc.category) { throw new Error('Each document must have a category'); }
+        if (!doc.documentType) { throw new Error('Each document must have a documentType'); }
+        if (!doc.documentName) { throw new Error('Each document must have a documentName'); }
+        if (!doc.fileUrl) { throw new Error('Each document must have a fileUrl'); }
       }
       return true;
     }),
@@ -506,7 +493,9 @@ const validatePersonalInfoUpdate = [
     .notEmpty()
     .withMessage('Bank account provider must be a non-empty string')
     .isLength({ min: 2, max: 50 })
-    .withMessage('Bank account provider name must be between 2 and 50 characters'),
+    .withMessage(
+      'Bank account provider name must be between 2 and 50 characters'
+    ),
 
   handleValidationErrors
 ];
@@ -660,29 +649,17 @@ const validatePersonalInfoUpdateWithFiles = [
     .isBoolean()
     .withMessage('EOR employed must be a boolean'),
 
-  body('uaid')
+  body('documents')
     .optional()
-    .isString()
-    .withMessage('UAID must be a string')
-    .custom((value) => {
+    .isObject()
+    .withMessage('Documents must be an object')
+    .custom(value => {
       if (value && value.startsWith('http')) {
         const urlRegex = /^https?:\/\/.+/;
         if (!urlRegex.test(value)) {
-          throw new Error('UAID must be a valid URL when starting with http');
-        }
-      }
-      return true;
-    }),
-
-  body('panCard')
-    .optional()
-    .isString()
-    .withMessage('panCard must be a string')
-    .custom((value) => {
-      if (value && value.startsWith('http')) {
-        const urlRegex = /^https?:\/\/.+/;
-        if (!urlRegex.test(value)) {
-          throw new Error('panCard must be a valid URL when starting with http');
+          throw new Error(
+            'Documents must be a valid URL when starting with http'
+          );
         }
       }
       return true;
@@ -914,7 +891,9 @@ const validatePersonalInfoUpdateWithFiles = [
     .notEmpty()
     .withMessage('Bank account provider must be a non-empty string')
     .isLength({ min: 2, max: 50 })
-    .withMessage('Bank account provider name must be between 2 and 50 characters'),
+    .withMessage(
+      'Bank account provider name must be between 2 and 50 characters'
+    ),
 
   body('bankDetails.accountHolderName')
     .optional()
@@ -972,7 +951,9 @@ const validateExperienceInfoUpdate = [
     .optional()
     .isString()
     .notEmpty()
-    .withMessage('Professional background role is required and must be a string'),
+    .withMessage(
+      'Professional background role is required and must be a string'
+    ),
 
   body('professionalBackground.*.companyName')
     .optional()
