@@ -572,71 +572,125 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
 
     const finalUpdateData = {
       ...parsedUpdateData,
-      profilePicture: '' // Initialize profilePicture to empty string
+      profilePicture: ''
     };
 
-    // Handle files as an array (multer.any())
-    if (Array.isArray(files)) {
-      for (const file of files) {
-        if (file.fieldname !== 'profilePicture') {
-          // Upload to S3
-          let fileUrl = '';
-          try {
-            const uploadResult = await uploadFileToS3(
-              file.buffer,
-              file.originalname,
-              file.mimetype,
-              'documents',
-              userId
-            );
-            fileUrl = uploadResult.fileUrl;
-          } catch (error) {
-            return createErrorResponse(
-              `Failed to upload file ${file.fieldname}: ${error.message}`
-            );
-          }
-          // Normalize key
-          const normalizedKey = file.fieldname
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '_')
-            .replace(/^_+|_+$/g, '');
-          existingUser.documents = (existingUser.documents || []).filter(
-            doc =>
-              !(
-                doc.documentType === normalizedKey &&
-                doc.documentName === file.originalname
-              )
+    // Handle file uploads - FIXED LOGIC
+    if (Array.isArray(files) && files.length > 0) {
+      // Check if we have documents array in updateData
+      if (
+        Array.isArray(updateData.documents) &&
+        updateData.documents.length > 0
+      ) {
+        // Process each document with its corresponding file
+        for (let idx = 0; idx < updateData.documents.length; idx++) {
+          const docMeta = updateData.documents[idx];
+          const file = files.find(
+            f => f.fieldname === `documents[${idx}][file]`
           );
-          existingUser.documents.push({
-            category: updateData.category,
-            documentType: normalizedKey,
-            documentName: file.originalname,
-            fileUrl: fileUrl,
-            fileName: file.originalname,
-            fileSize: file.size,
-            mimeType: file.mimetype,
-            uploadedAt: new Date(),
-            isVerified: false
-          });
-        } else {
-          try {
-            const uploadResult = await uploadFileToS3(
-              file.buffer,
-              file.originalname,
-              file.mimetype,
-              'profiles',
-              userId
-            );
-            finalUpdateData.profilePicture = uploadResult.fileUrl;
-          } catch (error) {
-            return createErrorResponse(
-              `Failed to upload profile picture: ${error.message}`
-            );
+
+          if (file) {
+            let fileUrl = '';
+            try {
+              const uploadResult = await uploadFileToS3(
+                file.buffer,
+                file.originalname,
+                file.mimetype,
+                'documents',
+                userId
+              );
+              fileUrl = uploadResult.fileUrl;
+            } catch (error) {
+              return createErrorResponse(
+                `Failed to upload file for document ${idx}: ${error.message}`
+              );
+            }
+
+            if (fileUrl) {
+              const newDoc = {
+                category: docMeta.category || '',
+                documentType: docMeta.documentType || '',
+                documentName: docMeta.documentName || file.originalname,
+                fileUrl: fileUrl,
+                fileName: file.originalname,
+                fileSize: file.size,
+                mimeType: file.mimetype,
+                uploadedAt: new Date(),
+                isVerified: false
+              };
+              existingUser.documents.push(newDoc);
+            }
           }
         }
       }
+
+      // Handle profile picture and other non-document files
+      await Promise.all(
+        files.map(async file => {
+          if (file.fieldname === 'profilePicture') {
+            try {
+              const uploadResult = await uploadFileToS3(
+                file.buffer,
+                file.originalname,
+                file.mimetype,
+                'profiles',
+                userId
+              );
+              finalUpdateData.profilePicture = uploadResult.fileUrl;
+            } catch (error) {
+              return createErrorResponse(
+                `Failed to upload profile picture: ${error.message}`
+              );
+            }
+          } else if (!file.fieldname.includes('documents[')) {
+            // Handle other non-document files (legacy support)
+            let fileUrl = '';
+            try {
+              const uploadResult = await uploadFileToS3(
+                file.buffer,
+                file.originalname,
+                file.mimetype,
+                'documents',
+                userId
+              );
+              fileUrl = uploadResult.fileUrl;
+            } catch (error) {
+              return createErrorResponse(
+                `Failed to upload file ${file.fieldname}: ${error.message}`
+              );
+            }
+
+            const normalizedKey = file.fieldname
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '_')
+              .replace(/^_+|_+$/g, '');
+
+            if (fileUrl) {
+              existingUser.documents = (existingUser.documents || []).filter(
+                doc =>
+                  !(
+                    doc.documentType === normalizedKey &&
+                    doc.documentName === file.originalname
+                  )
+              );
+              existingUser.documents.push({
+                category: updateData.category || '',
+                documentType: normalizedKey,
+                documentName: file.originalname,
+                fileUrl: fileUrl,
+                fileName: file.originalname,
+                fileSize: file.size,
+                mimeType: file.mimetype,
+                uploadedAt: new Date(),
+                isVerified: false
+              });
+            }
+          }
+        })
+      );
     }
 
+    // Handle address update
     let addressResult = null;
     if (finalUpdateData.address) {
       addressResult = await handleAddressUpdate(
@@ -649,14 +703,19 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
       delete finalUpdateData.address;
     }
 
+    // Remove documents from finalUpdateData to avoid overwriting the processed documents
+    delete finalUpdateData.documents;
+
     // Assign all other fields to the user and save
     Object.assign(existingUser, finalUpdateData);
+
     const updatedUser = await existingUser.save();
 
     if (!updatedUser) {
       return createErrorResponse('Failed to update user');
     }
 
+    // Rest of your response formatting logic...
     const sanitizedUserData = sanitizeUserData(updatedUser);
     const formattedData = formatDeveloperData(sanitizedUserData);
 
@@ -664,14 +723,12 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
       formattedData.address = addressResult.data;
     }
 
-    // Build response with only updated fields if eorEmployed is true, else return full data
     let responseData;
     if (
       formattedData.eorEmployed === true ||
       formattedData.eorEmployed === 'true'
     ) {
       responseData = {};
-      // Always include these identity fields
       const identityFields = [
         'id',
         'firstName',
@@ -688,7 +745,7 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
           responseData[field] = formattedData[field];
         }
       });
-      // If address was updated and present in addressResult, include it
+
       if (
         'address' in parsedUpdateData &&
         addressResult &&
@@ -696,7 +753,7 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
       ) {
         responseData.address = addressResult.data;
       }
-      // Add any other updated fields from parsedUpdateData that exist in formattedData
+
       Object.keys(parsedUpdateData).forEach(key => {
         if (key !== 'address' && formattedData[key] !== undefined) {
           responseData[key] = formattedData[key];

@@ -253,16 +253,26 @@ const validatePersonalInfoUpdate = [
     .optional()
     .isArray()
     .withMessage('Documents must be an array')
-    .custom((documents) => {
-      if (!Array.isArray(documents)) { return true; } // handled by isArray
+    .custom(documents => {
+      if (!Array.isArray(documents)) {
+        return true;
+      } // handled by isArray
       for (const doc of documents) {
         if (typeof doc !== 'object' || doc === null) {
           throw new Error('Each document must be an object');
         }
-        if (!doc.category) { throw new Error('Each document must have a category'); }
-        if (!doc.documentType) { throw new Error('Each document must have a documentType'); }
-        if (!doc.documentName) { throw new Error('Each document must have a documentName'); }
-        if (!doc.fileUrl) { throw new Error('Each document must have a fileUrl'); }
+        if (!doc.category) {
+          throw new Error('Each document must have a category');
+        }
+        if (!doc.documentType) {
+          throw new Error('Each document must have a documentType');
+        }
+        if (!doc.documentName) {
+          throw new Error('Each document must have a documentName');
+        }
+        if (!doc.fileUrl) {
+          throw new Error('Each document must have a fileUrl');
+        }
       }
       return true;
     }),
@@ -651,15 +661,24 @@ const validatePersonalInfoUpdateWithFiles = [
 
   body('documents')
     .optional()
-    .isObject()
-    .withMessage('Documents must be an object')
-    .custom(value => {
-      if (value && value.startsWith('http')) {
-        const urlRegex = /^https?:\/\/.+/;
-        if (!urlRegex.test(value)) {
-          throw new Error(
-            'Documents must be a valid URL when starting with http'
-          );
+    .isArray()
+    .withMessage('Documents must be an array')
+    .custom(documents => {
+      if (!Array.isArray(documents)) {
+        return true;
+      } // handled by isArray
+      for (const doc of documents) {
+        if (typeof doc !== 'object' || doc === null) {
+          throw new Error('Each document must be an object');
+        }
+        if (!doc.category) {
+          throw new Error('Each document must have a category');
+        }
+        if (!doc.documentType) {
+          throw new Error('Each document must have a documentType');
+        }
+        if (!doc.documentName) {
+          throw new Error('Each document must have a documentName');
         }
       }
       return true;
