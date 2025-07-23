@@ -1,5 +1,5 @@
 const HttpResponseHandler = require('../../../../utils/httpResponseHandler');
-const { getCountryList } = require('../../services/sharedService');
+const { getCountryList, getSkillList } = require('../../services/sharedService');
 
 const getCountryListController = async (req, res) => {
   try {
@@ -20,4 +20,18 @@ const getCountryListController = async (req, res) => {
   }
 };
 
-module.exports = { getCountryListController };
+const getSkillListController = async (req, res) => {
+  try {
+    const skillList = await getSkillList();
+    return HttpResponseHandler.success(
+      res,
+      skillList,
+      'Skill list fetched successfully',
+      200
+    );
+  } catch (error) {
+    return HttpResponseHandler.error(res, error, 'Failed to fetch skill list', 500);
+  }
+};
+
+module.exports = { getCountryListController, getSkillListController };

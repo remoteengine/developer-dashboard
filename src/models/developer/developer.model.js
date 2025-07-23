@@ -54,6 +54,8 @@ const developerSchema = new Schema({
         type: Object,
         default: {}
       },
+      referenceName: String,
+      referenceContact: String,
       description: String,
       isPresentCompany: Boolean,
       experienceLetter: String,
@@ -195,3 +197,4 @@ const developerSchema = new Schema({
 const Developer = User.discriminator('Developer', developerSchema, 'developer');
 
 module.exports = Developer;
+

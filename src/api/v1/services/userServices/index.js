@@ -778,8 +778,312 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
   }
 };
 
+// const updateExperienceInfoWithFiles = async (userId, updateData, files) => {
+//   try {
+//     const existingUser = await developer.findById(userId);
+//     if (!existingUser) {
+//       return createErrorResponse('User not found');
+//     }
+
+//     if (existingUser.userType !== 'developer') {
+//       return createErrorResponse(
+//         'User is not a developer. Use updateUserProfile for other user types.'
+//       );
+//     }
+
+//     // Parse JSON fields from form data
+//     const parsedUpdateData = { ...updateData };
+
+//     // Parse professionalBackground if it's a string (from form data)
+//     if (typeof parsedUpdateData.professionalBackground === 'string') {
+//       try {
+//         parsedUpdateData.professionalBackground = JSON.parse(
+//           parsedUpdateData.professionalBackground
+//         );
+//       } catch (error) {
+//         return createErrorResponse(
+//           'Invalid professionalBackground format. Must be valid JSON.'
+//         );
+//       }
+//     }
+
+//     if (typeof parsedUpdateData.addMultipleExperiences === 'string') {
+//       try {
+//         parsedUpdateData.addMultipleExperiences = JSON.parse(
+//           parsedUpdateData.addMultipleExperiences
+//         );
+//       } catch (error) {
+//         return createErrorResponse(
+//           'Invalid addMultipleExperiences format. Must be valid JSON.'
+//         );
+//       }
+//     }
+
+//     if (typeof parsedUpdateData.updateMultipleExperiences === 'string') {
+//       try {
+//         parsedUpdateData.updateMultipleExperiences = JSON.parse(
+//           parsedUpdateData.updateMultipleExperiences
+//         );
+//       } catch (error) {
+//         return createErrorResponse(
+//           'Invalid updateMultipleExperiences format. Must be valid JSON.'
+//         );
+//       }
+//     }
+
+//     const uploadedFiles = {};
+//     const indexedFiles = {};
+
+//     if (files) {
+//       if (files.experienceLetter && files.experienceLetter[0]) {
+//         const experienceLetterFile = files.experienceLetter[0];
+//         try {
+//           const uploadResult = await uploadFileToS3(
+//             experienceLetterFile.buffer,
+//             experienceLetterFile.originalname,
+//             experienceLetterFile.mimetype,
+//             'documents/experience',
+//             userId
+//           );
+//           uploadedFiles.experienceLetter = uploadResult.fileUrl;
+//         } catch (error) {
+//           return createErrorResponse(
+//             `Failed to upload experience letter: ${error.message}`
+//           );
+//         }
+//       }
+
+//       if (files.relievingLetter && files.relievingLetter[0]) {
+//         const relievingLetterFile = files.relievingLetter[0];
+//         try {
+//           const uploadResult = await uploadFileToS3(
+//             relievingLetterFile.buffer,
+//             relievingLetterFile.originalname,
+//             relievingLetterFile.mimetype,
+//             'documents/relieving',
+//             userId
+//           );
+//           uploadedFiles.relievingLetter = uploadResult.fileUrl;
+//         } catch (error) {
+//           return createErrorResponse(
+//             `Failed to upload relieving letter: ${error.message}`
+//           );
+//         }
+//       }
+
+//       if (files.certificate && files.certificate[0]) {
+//         const certificateFile = files.certificate[0];
+//         try {
+//           const uploadResult = await uploadFileToS3(
+//             certificateFile.buffer,
+//             certificateFile.originalname,
+//             certificateFile.mimetype,
+//             'documents/certificates',
+//             userId
+//           );
+//           uploadedFiles.certificate = uploadResult.fileUrl;
+//         } catch (error) {
+//           return createErrorResponse(
+//             `Failed to upload certificate: ${error.message}`
+//           );
+//         }
+//       }
+
+//       // Add support for paySlip
+//       if (files.paySlip && files.paySlip[0]) {
+//         const paySlipFile = files.paySlip[0];
+//         try {
+//           const uploadResult = await uploadFileToS3(
+//             paySlipFile.buffer,
+//             paySlipFile.originalname,
+//             paySlipFile.mimetype,
+//             'documents/payslip',
+//             userId
+//           );
+//           uploadedFiles.paySlip = uploadResult.fileUrl;
+//         } catch (error) {
+//           return createErrorResponse(
+//             `Failed to upload pay slip: ${error.message}`
+//           );
+//         }
+//       }
+
+//       // Add support for appointmentLetter
+//       if (files.appointmentLetter && files.appointmentLetter[0]) {
+//         const appointmentLetterFile = files.appointmentLetter[0];
+//         try {
+//           const uploadResult = await uploadFileToS3(
+//             appointmentLetterFile.buffer,
+//             appointmentLetterFile.originalname,
+//             appointmentLetterFile.mimetype,
+//             'documents/appointment',
+//             userId
+//           );
+//           uploadedFiles.appointmentLetter = uploadResult.fileUrl;
+//         } catch (error) {
+//           return createErrorResponse(
+//             `Failed to upload appointment letter: ${error.message}`
+//           );
+//         }
+//       }
+
+//       for (const fileKey of Object.keys(files)) {
+//         const indexMatch = fileKey.match(
+//           /^(experienceLetter|relievingLetter|certificate|paySlip|appointmentLetter)_(\d+)$/
+//         );
+//         if (indexMatch) {
+//           const [, fileType, index] = indexMatch;
+//           const file = files[fileKey][0];
+
+//           if (file) {
+//             try {
+//               let folderName = 'documents/certificates';
+//               if (fileType === 'experienceLetter') {
+//                 folderName = 'documents/experience';
+//               }
+//               if (fileType === 'relievingLetter') {
+//                 folderName = 'documents/relieving';
+//               }
+//               if (fileType === 'paySlip') {
+//                 folderName = 'documents/payslip';
+//               }
+//               if (fileType === 'appointmentLetter') {
+//                 folderName = 'documents/appointment';
+//               }
+
+//               const uploadResult = await uploadFileToS3(
+//                 file.buffer,
+//                 file.originalname,
+//                 file.mimetype,
+//                 folderName,
+//                 userId
+//               );
+
+//               if (!indexedFiles[index]) {
+//                 indexedFiles[index] = {};
+//               }
+//               indexedFiles[index][fileType] = uploadResult.fileUrl;
+//             } catch (error) {
+//               return createErrorResponse(
+//                 `Failed to upload ${fileType} at index ${index}: ${error.message}`
+//               );
+//             }
+//           }
+//         }
+//       }
+//     }
+
+//     if (
+//       parsedUpdateData.addMultipleExperiences &&
+//       Array.isArray(parsedUpdateData.addMultipleExperiences)
+//     ) {
+//       const experiencesWithFiles = parsedUpdateData.addMultipleExperiences.map(
+//         (experience, index) => {
+//           const experienceWithFiles = { ...experience };
+
+//           if (indexedFiles[index]) {
+//             Object.assign(experienceWithFiles, indexedFiles[index]);
+//           }
+
+//           return experienceWithFiles;
+//         }
+//       );
+
+//       parsedUpdateData.professionalBackground = experiencesWithFiles;
+//       delete parsedUpdateData.addMultipleExperiences;
+//     }
+
+//     if (
+//       parsedUpdateData.updateMultipleExperiences &&
+//       Array.isArray(parsedUpdateData.updateMultipleExperiences)
+//     ) {
+//       const experiencesWithFiles =
+//         parsedUpdateData.updateMultipleExperiences.map((experience, index) => {
+//           const experienceWithFiles = { ...experience };
+
+//           if (indexedFiles[index]) {
+//             Object.assign(experienceWithFiles, indexedFiles[index]);
+//           }
+
+//           return experienceWithFiles;
+//         });
+
+//       parsedUpdateData.professionalBackground = experiencesWithFiles;
+//       delete parsedUpdateData.updateMultipleExperiences;
+//     }
+
+//     if (Object.keys(uploadedFiles).length > 0) {
+//       if (parsedUpdateData.updateExperienceById) {
+//         parsedUpdateData.updateExperienceById = {
+//           ...parsedUpdateData.updateExperienceById,
+//           ...uploadedFiles
+//         };
+//       }
+//       // Case 2: Adding single experience entry (object)
+//       else if (
+//         parsedUpdateData.professionalBackground &&
+//         typeof parsedUpdateData.professionalBackground === 'object' &&
+//         !Array.isArray(parsedUpdateData.professionalBackground)
+//       ) {
+//         parsedUpdateData.professionalBackground = {
+//           ...parsedUpdateData.professionalBackground,
+//           ...uploadedFiles
+//         };
+//       }
+//       // Case 3: No specific experience data, add files to general update
+//       else if (!parsedUpdateData.professionalBackground) {
+//         // Merge files directly into the update data for general fields
+//         Object.assign(parsedUpdateData, uploadedFiles);
+//       }
+//     }
+
+//     // Call the existing updateExperienceInfo logic with the enhanced data
+//     const result = await updateExperienceInfo(userId, parsedUpdateData);
+
+//     if (!result.success) {
+//       return result;
+//     }
+
+//     // Build response with only updated fields
+//     const responseData = {};
+//     // If professionalBackground was updated, include it
+//     if (
+//       'professionalBackground' in parsedUpdateData ||
+//       'addMultipleExperiences' in updateData ||
+//       'updateMultipleExperiences' in updateData ||
+//       'updateExperienceById' in updateData ||
+//       'removeExperienceId' in updateData ||
+//       'removeExperienceIndex' in updateData
+//     ) {
+//       responseData.professionalBackground = result.data.professionalBackground;
+//     }
+//     // If address was updated and present in result, include it
+//     if ('address' in parsedUpdateData && result.data.address) {
+//       responseData.address = result.data.address;
+//     }
+//     // Add any other updated fields from parsedUpdateData that exist in result.data
+//     Object.keys(parsedUpdateData).forEach(key => {
+//       if (
+//         key !== 'professionalBackground' &&
+//         key !== 'address' &&
+//         result.data[key] !== undefined
+//       ) {
+//         responseData[key] = result.data[key];
+//       }
+//     });
+
+//     return createSuccessResponse(
+//       'Experience information with files updated successfully',
+//       responseData
+//     );
+//   } catch (error) {
+//     return handleValidationError(error);
+//   }
+// };
+
 const updateExperienceInfoWithFiles = async (userId, updateData, files) => {
   try {
+    // Validate user
     const existingUser = await developer.findById(userId);
     if (!existingUser) {
       return createErrorResponse('User not found');
@@ -791,286 +1095,30 @@ const updateExperienceInfoWithFiles = async (userId, updateData, files) => {
       );
     }
 
-    // Parse JSON fields from form data
-    const parsedUpdateData = { ...updateData };
+    // Parse JSON fields
+    const parsedUpdateData = parseJsonFields(updateData);
 
-    // Parse professionalBackground if it's a string (from form data)
-    if (typeof parsedUpdateData.professionalBackground === 'string') {
-      try {
-        parsedUpdateData.professionalBackground = JSON.parse(
-          parsedUpdateData.professionalBackground
-        );
-      } catch (error) {
-        return createErrorResponse(
-          'Invalid professionalBackground format. Must be valid JSON.'
-        );
-      }
-    }
+    // Handle file uploads
+    const { uploadedFiles, indexedFiles } = await handleFileUploads(
+      files,
+      userId
+    );
 
-    if (typeof parsedUpdateData.addMultipleExperiences === 'string') {
-      try {
-        parsedUpdateData.addMultipleExperiences = JSON.parse(
-          parsedUpdateData.addMultipleExperiences
-        );
-      } catch (error) {
-        return createErrorResponse(
-          'Invalid addMultipleExperiences format. Must be valid JSON.'
-        );
-      }
-    }
+    // Merge files with experience data
+    mergeFilesWithExperienceData(parsedUpdateData, uploadedFiles, indexedFiles);
 
-    if (typeof parsedUpdateData.updateMultipleExperiences === 'string') {
-      try {
-        parsedUpdateData.updateMultipleExperiences = JSON.parse(
-          parsedUpdateData.updateMultipleExperiences
-        );
-      } catch (error) {
-        return createErrorResponse(
-          'Invalid updateMultipleExperiences format. Must be valid JSON.'
-        );
-      }
-    }
-
-    const uploadedFiles = {};
-    const indexedFiles = {};
-
-    if (files) {
-      if (files.experienceLetter && files.experienceLetter[0]) {
-        const experienceLetterFile = files.experienceLetter[0];
-        try {
-          const uploadResult = await uploadFileToS3(
-            experienceLetterFile.buffer,
-            experienceLetterFile.originalname,
-            experienceLetterFile.mimetype,
-            'documents/experience',
-            userId
-          );
-          uploadedFiles.experienceLetter = uploadResult.fileUrl;
-        } catch (error) {
-          return createErrorResponse(
-            `Failed to upload experience letter: ${error.message}`
-          );
-        }
-      }
-
-      if (files.relievingLetter && files.relievingLetter[0]) {
-        const relievingLetterFile = files.relievingLetter[0];
-        try {
-          const uploadResult = await uploadFileToS3(
-            relievingLetterFile.buffer,
-            relievingLetterFile.originalname,
-            relievingLetterFile.mimetype,
-            'documents/relieving',
-            userId
-          );
-          uploadedFiles.relievingLetter = uploadResult.fileUrl;
-        } catch (error) {
-          return createErrorResponse(
-            `Failed to upload relieving letter: ${error.message}`
-          );
-        }
-      }
-
-      if (files.certificate && files.certificate[0]) {
-        const certificateFile = files.certificate[0];
-        try {
-          const uploadResult = await uploadFileToS3(
-            certificateFile.buffer,
-            certificateFile.originalname,
-            certificateFile.mimetype,
-            'documents/certificates',
-            userId
-          );
-          uploadedFiles.certificate = uploadResult.fileUrl;
-        } catch (error) {
-          return createErrorResponse(
-            `Failed to upload certificate: ${error.message}`
-          );
-        }
-      }
-
-      // Add support for paySlip
-      if (files.paySlip && files.paySlip[0]) {
-        const paySlipFile = files.paySlip[0];
-        try {
-          const uploadResult = await uploadFileToS3(
-            paySlipFile.buffer,
-            paySlipFile.originalname,
-            paySlipFile.mimetype,
-            'documents/payslip',
-            userId
-          );
-          uploadedFiles.paySlip = uploadResult.fileUrl;
-        } catch (error) {
-          return createErrorResponse(
-            `Failed to upload pay slip: ${error.message}`
-          );
-        }
-      }
-
-      // Add support for appointmentLetter
-      if (files.appointmentLetter && files.appointmentLetter[0]) {
-        const appointmentLetterFile = files.appointmentLetter[0];
-        try {
-          const uploadResult = await uploadFileToS3(
-            appointmentLetterFile.buffer,
-            appointmentLetterFile.originalname,
-            appointmentLetterFile.mimetype,
-            'documents/appointment',
-            userId
-          );
-          uploadedFiles.appointmentLetter = uploadResult.fileUrl;
-        } catch (error) {
-          return createErrorResponse(
-            `Failed to upload appointment letter: ${error.message}`
-          );
-        }
-      }
-
-      for (const fileKey of Object.keys(files)) {
-        const indexMatch = fileKey.match(
-          /^(experienceLetter|relievingLetter|certificate|paySlip|appointmentLetter)_(\d+)$/
-        );
-        if (indexMatch) {
-          const [, fileType, index] = indexMatch;
-          const file = files[fileKey][0];
-
-          if (file) {
-            try {
-              let folderName = 'documents/certificates';
-              if (fileType === 'experienceLetter') {
-                folderName = 'documents/experience';
-              }
-              if (fileType === 'relievingLetter') {
-                folderName = 'documents/relieving';
-              }
-              if (fileType === 'paySlip') {
-                folderName = 'documents/payslip';
-              }
-              if (fileType === 'appointmentLetter') {
-                folderName = 'documents/appointment';
-              }
-
-              const uploadResult = await uploadFileToS3(
-                file.buffer,
-                file.originalname,
-                file.mimetype,
-                folderName,
-                userId
-              );
-
-              if (!indexedFiles[index]) {
-                indexedFiles[index] = {};
-              }
-              indexedFiles[index][fileType] = uploadResult.fileUrl;
-            } catch (error) {
-              return createErrorResponse(
-                `Failed to upload ${fileType} at index ${index}: ${error.message}`
-              );
-            }
-          }
-        }
-      }
-    }
-
-    if (
-      parsedUpdateData.addMultipleExperiences &&
-      Array.isArray(parsedUpdateData.addMultipleExperiences)
-    ) {
-      const experiencesWithFiles = parsedUpdateData.addMultipleExperiences.map(
-        (experience, index) => {
-          const experienceWithFiles = { ...experience };
-
-          if (indexedFiles[index]) {
-            Object.assign(experienceWithFiles, indexedFiles[index]);
-          }
-
-          return experienceWithFiles;
-        }
-      );
-
-      parsedUpdateData.professionalBackground = experiencesWithFiles;
-      delete parsedUpdateData.addMultipleExperiences;
-    }
-
-    if (
-      parsedUpdateData.updateMultipleExperiences &&
-      Array.isArray(parsedUpdateData.updateMultipleExperiences)
-    ) {
-      const experiencesWithFiles =
-        parsedUpdateData.updateMultipleExperiences.map((experience, index) => {
-          const experienceWithFiles = { ...experience };
-
-          if (indexedFiles[index]) {
-            Object.assign(experienceWithFiles, indexedFiles[index]);
-          }
-
-          return experienceWithFiles;
-        });
-
-      parsedUpdateData.professionalBackground = experiencesWithFiles;
-      delete parsedUpdateData.updateMultipleExperiences;
-    }
-
-    if (Object.keys(uploadedFiles).length > 0) {
-      if (parsedUpdateData.updateExperienceById) {
-        parsedUpdateData.updateExperienceById = {
-          ...parsedUpdateData.updateExperienceById,
-          ...uploadedFiles
-        };
-      }
-      // Case 2: Adding single experience entry (object)
-      else if (
-        parsedUpdateData.professionalBackground &&
-        typeof parsedUpdateData.professionalBackground === 'object' &&
-        !Array.isArray(parsedUpdateData.professionalBackground)
-      ) {
-        parsedUpdateData.professionalBackground = {
-          ...parsedUpdateData.professionalBackground,
-          ...uploadedFiles
-        };
-      }
-      // Case 3: No specific experience data, add files to general update
-      else if (!parsedUpdateData.professionalBackground) {
-        // Merge files directly into the update data for general fields
-        Object.assign(parsedUpdateData, uploadedFiles);
-      }
-    }
-
-    // Call the existing updateExperienceInfo logic with the enhanced data
+    // Update experience info
     const result = await updateExperienceInfo(userId, parsedUpdateData);
-
     if (!result.success) {
       return result;
     }
 
-    // Build response with only updated fields
-    const responseData = {};
-    // If professionalBackground was updated, include it
-    if (
-      'professionalBackground' in parsedUpdateData ||
-      'addMultipleExperiences' in updateData ||
-      'updateMultipleExperiences' in updateData ||
-      'updateExperienceById' in updateData ||
-      'removeExperienceId' in updateData ||
-      'removeExperienceIndex' in updateData
-    ) {
-      responseData.professionalBackground = result.data.professionalBackground;
-    }
-    // If address was updated and present in result, include it
-    if ('address' in parsedUpdateData && result.data.address) {
-      responseData.address = result.data.address;
-    }
-    // Add any other updated fields from parsedUpdateData that exist in result.data
-    Object.keys(parsedUpdateData).forEach(key => {
-      if (
-        key !== 'professionalBackground' &&
-        key !== 'address' &&
-        result.data[key] !== undefined
-      ) {
-        responseData[key] = result.data[key];
-      }
-    });
+    // Build response
+    const responseData = buildResponseData(
+      parsedUpdateData,
+      updateData,
+      result.data
+    );
 
     return createSuccessResponse(
       'Experience information with files updated successfully',
@@ -1079,6 +1127,183 @@ const updateExperienceInfoWithFiles = async (userId, updateData, files) => {
   } catch (error) {
     return handleValidationError(error);
   }
+};
+
+// Helper function to parse JSON fields
+const parseJsonFields = updateData => {
+  const parsedData = { ...updateData };
+  const jsonFields = [
+    'professionalBackground',
+    'addMultipleExperiences',
+    'updateMultipleExperiences'
+  ];
+
+  jsonFields.forEach(field => {
+    if (typeof parsedData[field] === 'string') {
+      try {
+        parsedData[field] = JSON.parse(parsedData[field]);
+      } catch (error) {
+        throw new Error(`Invalid ${field} format. Must be valid JSON.`);
+      }
+    }
+  });
+
+  return parsedData;
+};
+
+// Helper function to handle file uploads
+const handleFileUploads = async (files, userId) => {
+  const uploadedFiles = {};
+  const indexedFiles = {};
+
+  if (!files) {
+    return { uploadedFiles, indexedFiles };
+  }
+
+  // Define file types and their S3 folders
+  const fileConfig = {
+    experienceLetter: 'documents/experience',
+    relievingLetter: 'documents/relieving',
+    certificate: 'documents/certificates',
+    paySlip: 'documents/payslip',
+    appointmentLetter: 'documents/appointment'
+  };
+
+  // Upload single files
+  for (const [fileType, folderName] of Object.entries(fileConfig)) {
+    if (files[fileType]?.[0]) {
+      try {
+        const uploadResult = await uploadFileToS3(
+          files[fileType][0].buffer,
+          files[fileType][0].originalname,
+          files[fileType][0].mimetype,
+          folderName,
+          userId
+        );
+        uploadedFiles[fileType] = uploadResult.fileUrl;
+      } catch (error) {
+        throw new Error(`Failed to upload ${fileType}: ${error.message}`);
+      }
+    }
+  }
+
+  // Upload indexed files (with _index suffix)
+  for (const fileKey of Object.keys(files)) {
+    const indexMatch = fileKey.match(
+      /^(experienceLetter|relievingLetter|certificate|paySlip|appointmentLetter)_(\d+)$/
+    );
+
+    if (indexMatch) {
+      const [, fileType, index] = indexMatch;
+      const file = files[fileKey][0];
+
+      if (file) {
+        try {
+          const folderName = fileConfig[fileType];
+          const uploadResult = await uploadFileToS3(
+            file.buffer,
+            file.originalname,
+            file.mimetype,
+            folderName,
+            userId
+          );
+
+          if (!indexedFiles[index]) {
+            indexedFiles[index] = {};
+          }
+          indexedFiles[index][fileType] = uploadResult.fileUrl;
+        } catch (error) {
+          throw new Error(
+            `Failed to upload ${fileType} at index ${index}: ${error.message}`
+          );
+        }
+      }
+    }
+  }
+
+  return { uploadedFiles, indexedFiles };
+};
+
+// Helper function to merge files with experience data
+const mergeFilesWithExperienceData = (
+  parsedUpdateData,
+  uploadedFiles,
+  indexedFiles
+) => {
+  // Handle multiple experiences (add/update)
+  if (parsedUpdateData.addMultipleExperiences?.length) {
+    parsedUpdateData.professionalBackground =
+      parsedUpdateData.addMultipleExperiences.map((experience, index) => ({
+        ...experience,
+        ...indexedFiles[index]
+      }));
+    delete parsedUpdateData.addMultipleExperiences;
+  }
+
+  if (parsedUpdateData.updateMultipleExperiences?.length) {
+    parsedUpdateData.professionalBackground =
+      parsedUpdateData.updateMultipleExperiences.map((experience, index) => ({
+        ...experience,
+        ...indexedFiles[index]
+      }));
+    delete parsedUpdateData.updateMultipleExperiences;
+  }
+
+  // Handle single experience files
+  if (Object.keys(uploadedFiles).length > 0) {
+    if (parsedUpdateData.updateExperienceById) {
+      Object.assign(parsedUpdateData.updateExperienceById, uploadedFiles);
+    } else if (
+      parsedUpdateData.professionalBackground &&
+      typeof parsedUpdateData.professionalBackground === 'object' &&
+      !Array.isArray(parsedUpdateData.professionalBackground)
+    ) {
+      Object.assign(parsedUpdateData.professionalBackground, uploadedFiles);
+    } else if (!parsedUpdateData.professionalBackground) {
+      Object.assign(parsedUpdateData, uploadedFiles);
+    }
+  }
+};
+
+// Helper function to build response data
+const buildResponseData = (
+  parsedUpdateData,
+  originalUpdateData,
+  resultData
+) => {
+  const responseData = {};
+
+  // Check if professional background was updated
+  const professionalBackgroundUpdated = [
+    'professionalBackground',
+    'addMultipleExperiences',
+    'updateMultipleExperiences',
+    'updateExperienceById',
+    'removeExperienceId',
+    'removeExperienceIndex'
+  ].some(key => key in parsedUpdateData || key in originalUpdateData);
+
+  if (professionalBackgroundUpdated) {
+    responseData.professionalBackground = resultData.professionalBackground;
+  }
+
+  // Include address if updated
+  if ('address' in parsedUpdateData && resultData.address) {
+    responseData.address = resultData.address;
+  }
+
+  // Include other updated fields
+  Object.keys(parsedUpdateData).forEach(key => {
+    if (
+      key !== 'professionalBackground' &&
+      key !== 'address' &&
+      resultData[key] !== undefined
+    ) {
+      responseData[key] = resultData[key];
+    }
+  });
+
+  return responseData;
 };
 
 const updateEducationInfoWithFiles = async (userId, updateData, files) => {
