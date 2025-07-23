@@ -7,40 +7,12 @@ const { uploadFileToS3 } = require('../../../../utils/s3Service');
 const axios = require('axios');
 const { systemToken } = require('../../../../config/config');
 const EorRequestCustomerDashboard = require('../../../../models/customerDashboard/eor-request-customer.model');
-
-const sanitizeUserData = userData => {
-  const sanitized = userData.toObject ? userData.toObject() : { ...userData };
-  delete sanitized.password;
-  delete sanitized.emailToken;
-  delete sanitized.googleAuth?.accessToken;
-  delete sanitized.googleAuth?.refreshToken;
-  delete sanitized.linkedinAuth?.accessToken;
-  return sanitized;
-};
-
-const sanitizeAddressData = addressData => {
-  const sanitized = addressData.toObject
-    ? addressData.toObject()
-    : { ...addressData };
-  delete sanitized._id;
-  delete sanitized.__v;
-  delete sanitized.createdAt;
-  delete sanitized.updatedAt;
-  return sanitized;
-};
-
-const createSuccessResponse = (message, data) => ({
-  success: true,
-  message,
-  data
-});
-
-const createErrorResponse = (message, error = null, data = null) => ({
-  success: false,
-  message,
-  ...(error && { error }),
-  data
-});
+const {
+  createSuccessResponse,
+  createErrorResponse,
+  sanitizeUserData,
+  sanitizeAddressData
+} = require('./utils');
 
 // Helper function to hash password if provided
 const hashPasswordIfProvided = async updateData => {
@@ -52,66 +24,81 @@ const hashPasswordIfProvided = async updateData => {
 };
 
 // Helper function to format developer data
-const formatDeveloperData = userData => ({
-  id: userData._id,
-  firstName: userData.firstName,
-  lastName: userData.lastName,
-  email: userData.email,
-  userType: userData.userType,
-  loginBy: userData.loginBy,
-  profilePicture: userData.profilePicture,
-  isVerified: userData.isVerified,
-  isActive: userData.isActive,
-  createdAt: userData.createdAt,
-  updatedAt: userData.updatedAt,
+const formatDeveloperData = userData => {
+  // Helper to filter document fields
+  const filterDocumentFields = doc => {
+    const filtered = { ...doc };
+    delete filtered.fileSize;
+    delete filtered.mimeType;
+    delete filtered.uploadedAt;
+    delete filtered.isVerified;
+    delete filtered._id;
+    return filtered;
+  };
 
-  ...(userData.userType === 'developer' && {
-    about: userData.about || '',
-    dateOfBirth: userData.dateOfBirth || '',
-    phoneNumber: userData.phoneNumber || '',
-    aboutSelf: userData.aboutSelf || '',
-    maritalStatus: userData.maritalStatus || '',
-    hobbies: userData.hobbies || '',
-    countryOfCitizenship: userData.countryOfCitizenship || '',
-    countryOfResidence: userData.countryOfResidence || '',
+  return {
+    id: userData._id,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    email: userData.email,
+    userType: userData.userType,
+    loginBy: userData.loginBy,
+    profilePicture: userData.profilePicture,
+    isVerified: userData.isVerified,
+    isActive: userData.isActive,
+    createdAt: userData.createdAt,
+    updatedAt: userData.updatedAt,
 
-    role: userData.role || '',
-    otherRole: userData.otherRole || '',
-    totalWorkExperience: userData.totalWorkExperience || '',
-    totalWorkExperienceInMonths: userData.totalWorkExperienceInMonths || '',
-    mostExperiencedRole: userData.mostExperiencedRole || '',
+    ...(userData.userType === 'developer' && {
+      about: userData.about || '',
+      dateOfBirth: userData.dateOfBirth || '',
+      phoneNumber: userData.phoneNumber || '',
+      aboutSelf: userData.aboutSelf || '',
+      maritalStatus: userData.maritalStatus || '',
+      hobbies: userData.hobbies || '',
+      countryOfCitizenship: userData.countryOfCitizenship || '',
+      countryOfResidence: userData.countryOfResidence || '',
 
-    currentMonthlySalary: userData.currentMonthlySalary || '',
-    expectedMonthlySalary: userData.expectedMonthlySalary || '',
-    bargainedMonthlySalary: userData.bargainedMonthlySalary || '',
-    displayMonthlySalary: userData.displayMonthlySalary || '',
+      role: userData.role || '',
+      otherRole: userData.otherRole || '',
+      totalWorkExperience: userData.totalWorkExperience || '',
+      totalWorkExperienceInMonths: userData.totalWorkExperienceInMonths || '',
+      mostExperiencedRole: userData.mostExperiencedRole || '',
 
-    jobPreference: userData.jobPreference || '',
-    lookingForJob: userData.lookingForJob || '',
-    interestedFullTime: userData.interestedFullTime || '',
-    minimumNoticePeriod: userData.minimumNoticePeriod || '',
-    priorFreelanceExperience: userData.priorFreelanceExperience || '',
+      currentMonthlySalary: userData.currentMonthlySalary || '',
+      expectedMonthlySalary: userData.expectedMonthlySalary || '',
+      bargainedMonthlySalary: userData.bargainedMonthlySalary || '',
+      displayMonthlySalary: userData.displayMonthlySalary || '',
 
-    isProfileCompleted: userData.isProfileCompleted || '',
-    resumeInfoSaved: userData.resumeInfoSaved || '',
-    professionalInfoSaved: userData.professionalInfoSaved || '',
-    educationInfoSaved: userData.educationInfoSaved || '',
+      jobPreference: userData.jobPreference || '',
+      lookingForJob: userData.lookingForJob || '',
+      interestedFullTime: userData.interestedFullTime || '',
+      minimumNoticePeriod: userData.minimumNoticePeriod || '',
+      priorFreelanceExperience: userData.priorFreelanceExperience || '',
 
-    languages: userData.languages || [],
-    skills: userData.skills || [],
-    professionalBackground: userData.professionalBackground || [],
-    educationalBackground: userData.educationalBackground || [],
-    projects: userData.projects || [],
-    bankDetails: userData.bankDetails || {},
-    address: userData.address ? userData.address : {},
-    documents: userData.documents || [],
+      isProfileCompleted: userData.isProfileCompleted || '',
+      resumeInfoSaved: userData.resumeInfoSaved || '',
+      professionalInfoSaved: userData.professionalInfoSaved || '',
+      educationInfoSaved: userData.educationInfoSaved || '',
 
-    resumeUrl: userData.resumeUrl || '',
-    linkedinUrl: userData.linkedinUrl || '',
-    codingPlatform: userData.codingPlatform || '',
-    eorEmployed: userData.eorEmployed || ''
-  })
-});
+      languages: userData.languages || [],
+      skills: userData.skills || [],
+      professionalBackground: userData.professionalBackground || [],
+      educationalBackground: userData.educationalBackground || [],
+      projects: userData.projects || [],
+      bankDetails: userData.bankDetails || {},
+      address: userData.address ? userData.address : {},
+      documents: Array.isArray(userData.documents)
+        ? userData.documents.map(filterDocumentFields)
+        : [],
+
+      resumeUrl: userData.resumeUrl || '',
+      linkedinUrl: userData.linkedinUrl || '',
+      codingPlatform: userData.codingPlatform || '',
+      eorEmployed: userData.eorEmployed || ''
+    })
+  };
+};
 
 const handleValidationError = error => {
   if (error.name === 'ValidationError') {
@@ -120,12 +107,7 @@ const handleValidationError = error => {
       message: err.message
     }));
 
-    return {
-      success: false,
-      message: 'Validation error',
-      validationErrors: validationErrors,
-      data: null
-    };
+    return createErrorResponse('Validation error', null, { validationErrors });
   }
 
   // Handle MongoDB duplicate key error (E11000)
@@ -642,7 +624,7 @@ const updatePersonalInfoWithFiles = async (userId, updateData, files) => {
                 `Failed to upload profile picture: ${error.message}`
               );
             }
-          } else if (!file.fieldname.includes('documents[')) {
+          } else if (!file.fieldname.includes('documents')) {
             // Handle other non-document files (legacy support)
             let fileUrl = '';
             try {
