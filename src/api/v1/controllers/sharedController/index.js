@@ -1,5 +1,5 @@
 const HttpResponseHandler = require('../../../../utils/httpResponseHandler');
-const { getCountryList, getSkillList } = require('../../services/sharedService');
+const { getCountryList, getSkillList, getEorRequest } = require('../../services/sharedService');
 
 const getCountryListController = async (req, res) => {
   try {
@@ -34,4 +34,18 @@ const getSkillListController = async (req, res) => {
   }
 };
 
-module.exports = { getCountryListController, getSkillListController };
+const getEorRequestController = async (req, res) => {
+  try {
+    const eorRequest = await getEorRequest();
+    return HttpResponseHandler.success(
+      res,
+      eorRequest,
+      'Eor request fetched successfully',
+      200
+    );
+  } catch (error) {
+    return HttpResponseHandler.error(res, error, 'Failed to fetch eor request', 500);
+  }
+};
+
+module.exports = { getCountryListController, getSkillListController, getEorRequestController };

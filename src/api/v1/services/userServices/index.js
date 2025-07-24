@@ -4,9 +4,7 @@ const Address = require('../../../../models/address/address.model');
 const { validateAddressData } = require('../../validators/addressValidators');
 const bcrypt = require('bcrypt');
 const { uploadFileToS3 } = require('../../../../utils/s3Service');
-const axios = require('axios');
-const { systemToken } = require('../../../../config/config');
-const EorRequestCustomerDashboard = require('../../../../models/customerDashboard/eor-request-customer.model');
+
 const {
   createSuccessResponse,
   createErrorResponse,
@@ -122,7 +120,7 @@ const handleValidationError = error => {
   return createErrorResponse('Error processing request', error.message);
 };
 
-const getUserById = async userId => {
+const getUserById = async (userId, type) => {
   try {
     const user = await User.findById(userId);
 
@@ -142,7 +140,29 @@ const getUserById = async userId => {
       formattedData.address = sanitizedAddress;
     }
 
-    return createSuccessResponse('User retrieved successfully', formattedData);
+    // Filter response based on type
+    let filteredData = formattedData;
+    if (type === 'personalDetails') {
+      filteredData = {
+        bankDetails: formattedData.bankDetails || {},
+        documents: formattedData.documents || [],
+        firstName: formattedData.firstName,
+        lastName: formattedData.lastName,
+        phoneNumber: formattedData.phoneNumber,
+        email: formattedData.email,
+        address: formattedData.address || {}
+      };
+    } else if (type === 'experience') {
+      filteredData = {
+        professionalBackground: formattedData.professionalBackground || []
+      };
+    } else if (type === 'education') {
+      filteredData = {
+        educationalBackground: formattedData.educationalBackground || []
+      };
+    }
+
+    return createSuccessResponse('User retrieved successfully', filteredData);
   } catch (error) {
     return createErrorResponse('Error retrieving user', error.message);
   }
@@ -1499,54 +1519,13 @@ const updateEducationInfoWithFiles = async (userId, updateData, files) => {
   }
 };
 
-const getEorRequest = async email => {
-  try {
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${systemToken}`
-      }
-    };
-
-    const url = `http://localhost:3920/api/v1/service/employee-contracts/get-eor-request/${email}`;
-
-    const eorRequest = await axios.get(url, config);
-
-    if (!eorRequest || !eorRequest.data) {
-      return createErrorResponse('User not found');
-    }
-
-    return createSuccessResponse(
-      'EOR request fetched successfully',
-      eorRequest.data
-    );
-  } catch (error) {
-    return handleValidationError(error);
-  }
-};
-
-/**
- * Query the eor-request collection in the remoteengine-customer-dashboard database by email
- * @param {string} email
- * @returns {Promise<Object|null>} The EOR request document or null
- */
-const getEorRequestFromCustomerDashboard = async email => {
-  const doc = await EorRequestCustomerDashboard.findOne({ email });
-  if (!doc) {
-    return null;
-  }
-  return doc;
-};
-
 module.exports = {
   getUserById,
-  getEorRequest,
   updateUserProfile,
   updatePersonalInfo,
   updateExperienceInfo,
   updateEducationInfo,
   updatePersonalInfoWithFiles,
   updateExperienceInfoWithFiles,
-  updateEducationInfoWithFiles,
-  getEorRequestFromCustomerDashboard
+  updateEducationInfoWithFiles
 };

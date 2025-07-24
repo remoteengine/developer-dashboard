@@ -4,8 +4,10 @@ const { ApiError } = require('../../../../utils/errorHandler');
 
 const getUserById = async (req, res, next) => {
   const userId = req.user.userId;
+  const { type } = req.query; // Accept type from query string
+
   try {
-    const result = await userService.getUserById(userId);
+    const result = await userService.getUserById(userId, type); // Pass type to service
 
     if (!result.success) {
       throw new ApiError(result.message, 404);
