@@ -1,6 +1,11 @@
 const express = require('express');
 const sharedRoute = express.Router();
-const { getCountryListController, getSkillListController, getEorRequestController, updateEorRequestController } = require('../../controllers/sharedController');
+const {
+  getCountryListController,
+  getSkillListController,
+  getEorRequestController,
+  updateEorRequestController
+} = require('../../controllers/sharedController');
 
 sharedRoute.get('/country-list', getCountryListController);
 

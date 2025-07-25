@@ -26,21 +26,38 @@ const fetchAllFromCollection = async (collectionName, logLabel) => {
   }
 };
 
-const getCountryList = async () => fetchAllFromCollection('shared_countries', 'countries');
+const getCountryList = async () =>
+  fetchAllFromCollection('shared_countries', 'countries');
 const getSkillList = async () => fetchAllFromCollection('skills', 'skills');
-const getEorRequest = async () => fetchAllFromCollection('eorrequests', 'eor requests');
 
 const getEorRequestByEmail = async email => {
   await ensureDbConnected();
   const collection = customerDashboardConnection.db.collection('eorrequests');
-  const eorRequest = await collection.findOne({ email });
+  const eorRequest = await collection.findOne({
+    email,
+    isCurrentlyActive: true
+  });
   return eorRequest;
+};
+
+const getEorRequestByUserId = async userId => {
+  const user = await User.findById(userId);
+  const email = user?.email;
+  if (!email) {
+    throw new Error('User email not found');
+  }
+  return getEorRequestByEmail(email);
 };
 
 const getQuoteSummaryByContractId = async (contractId, eorId) => {
   await ensureDbConnected();
-  const collection = customerDashboardConnection.db.collection('quotesummaries');
-  const quoteSummary = await collection.find({ contractId, eorId }).sort({ createdAt: -1 }).limit(1).toArray();
+  const collection =
+    customerDashboardConnection.db.collection('quotesummaries');
+  const quoteSummary = await collection
+    .find({ contractId, eorId })
+    .sort({ createdAt: -1 })
+    .limit(1)
+    .toArray();
   return quoteSummary;
 };
 
@@ -54,12 +71,17 @@ const updateEorRequest = async (userId, body) => {
     }
     await ensureDbConnected();
     const collection = customerDashboardConnection.db.collection('eorrequests');
-    const eorRequest = await collection.findOne({ email, isCurrentlyActive: true });
+    const eorRequest = await collection.findOne({
+      email,
+      isCurrentlyActive: true
+    });
     if (!eorRequest) {
       throw new Error('Active EOR request not found for this user');
     }
     const updateObj = { ...updateFields };
-    if (overAllStatus) { updateObj.overAllStatus = overAllStatus; }
+    if (overAllStatus) {
+      updateObj.overAllStatus = overAllStatus;
+    }
     const updatedEorRequest = await collection.updateOne(
       { email, isCurrentlyActive: true },
       { $set: updateObj }
@@ -71,5 +93,11 @@ const updateEorRequest = async (userId, body) => {
   }
 };
 
-
-module.exports = { getCountryList, getSkillList, getEorRequest, getEorRequestByEmail, getQuoteSummaryByContractId, updateEorRequest };
+module.exports = {
+  getCountryList,
+  getSkillList,
+  getEorRequestByEmail,
+  getQuoteSummaryByContractId,
+  updateEorRequest,
+  getEorRequestByUserId
+};

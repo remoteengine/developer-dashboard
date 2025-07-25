@@ -1,5 +1,10 @@
 const HttpResponseHandler = require('../../../../utils/httpResponseHandler');
-const { getCountryList, getSkillList, getEorRequest, updateEorRequest } = require('../../services/sharedService');
+const {
+  getCountryList,
+  getSkillList,
+  getEorRequestByUserId,
+  updateEorRequest
+} = require('../../services/sharedService');
 
 const getCountryListController = async (req, res) => {
   try {
@@ -30,22 +35,62 @@ const getSkillListController = async (req, res) => {
       200
     );
   } catch (error) {
-    return HttpResponseHandler.error(res, error, 'Failed to fetch skill list', 500);
+    return HttpResponseHandler.error(
+      res,
+      error,
+      'Failed to fetch skill list',
+      500
+    );
   }
 };
 
 const getEorRequestController = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const eorRequest = await getEorRequest(userId);
+    const eorRequest = await getEorRequestByUserId(userId);
+    if (!eorRequest) {
+      return HttpResponseHandler.success(
+        res,
+        null,
+        'No Eor request found',
+        200
+      );
+    }
+    // Filter out unwanted fields
+    let filteredEorRequest = (({
+      _isActive,
+      _isDeleted,
+      _isCurrentlyActive,
+      _uploadAgreement,
+      _createdAt,
+      _updatedAt,
+      _uploadDocuments,
+      _id,
+      ...rest
+    }) => rest)(eorRequest);
+    delete filteredEorRequest.eorData;
+    delete filteredEorRequest.isActive;
+    delete filteredEorRequest.isDeleted;
+    delete filteredEorRequest.isCurrentlyActive;
+    delete filteredEorRequest.uploadAgreement;
+    delete filteredEorRequest.createdAt;
+    delete filteredEorRequest.updatedAt;
+    delete filteredEorRequest.uploadDocuments;
+    delete filteredEorRequest._id;
+    delete filteredEorRequest.__v;
     return HttpResponseHandler.success(
       res,
-      eorRequest,
+      filteredEorRequest,
       'Eor request fetched successfully',
       200
     );
   } catch (error) {
-    return HttpResponseHandler.error(res, error, 'Failed to fetch eor request', 500);
+    return HttpResponseHandler.error(
+      res,
+      error,
+      'Failed to fetch eor request',
+      500
+    );
   }
 };
 
@@ -60,9 +105,18 @@ const updateEorRequestController = async (req, res) => {
       200
     );
   } catch (error) {
-    return HttpResponseHandler.error(res, error, 'Failed to update eor request', 500);
+    return HttpResponseHandler.error(
+      res,
+      error,
+      'Failed to update eor request',
+      500
+    );
   }
 };
 
-
-module.exports = { getCountryListController, getSkillListController, getEorRequestController,updateEorRequestController };
+module.exports = {
+  getCountryListController,
+  getSkillListController,
+  getEorRequestController,
+  updateEorRequestController
+};
