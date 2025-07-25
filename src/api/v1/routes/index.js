@@ -7,12 +7,15 @@ const { logger } = require('../../../config/logger');
 const authRoutes = require('./authRoute/index');
 const userRoutes = require('./userRoute/index');
 const sharedRoutes = require('./sharedRoute/index');
+const agreementRoutes = require('./agreement/index');
 
 router.use('/auth', authRoutes);
 
 router.use('/user', verifyAccessTokenMiddleware, userRoutes);
 
 router.use('/shared', verifyAccessTokenMiddleware, sharedRoutes);
+
+router.use('/agreement', verifyAccessTokenMiddleware, agreementRoutes);
 
 router.get('/healthcheck', (req, res) => {
   logger.info('Inside healthCheck');

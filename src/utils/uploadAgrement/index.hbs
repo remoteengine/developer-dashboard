@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Letter - {{fullName}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            position: relative;
+            /* Make header relative for absolute positioning of logo */
+            margin-bottom: 30px;
+            min-height: 100px;
+        }
+
+        .logo {
+            position: absolute;
+            /* Position logo absolutely within header */
+            top: 0;
+            right: 0;
+            max-width: 150px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .header h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .date {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .address {
+            margin-bottom: 20px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 300px;
+            margin: 40px 0 10px 0;
+        }
+
+        .footer {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #666;
+            text-align: left;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 100%;
+        }
+
+        .footer p {
+            margin: 2px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .highlight {
+            font-weight: bold;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img src="{{logoUrl}}" alt="RemoteEngine Technologies Private Limited" class="logo"
+            style="max-width: 150px; height: auto;">
+        <h1>OFFER LETTER</h1>
+    </div>
+
+    <div class="date">
+        {{date}}
+    </div>
+
+    <div class="address">
+        <p class="highlight">{{fullName}}</p>
+        <p>{{addressLine1}},</p>
+        <p>{{addressLine2}}, {{city}}, {{state}}, {{zipCode}}</p>
+    </div>
+
+    <p><strong>Dear {{fullName}},</strong></p>
+
+    <p>We are pleased to offer you the position of <strong>{{position}}</strong> with <strong>RemoteEngine Technologies
+            Private Limited ("RemoteEngine" or the "Company")</strong>. In this position, you will report to
+        <strong>{{reportingManagerName}}</strong> and will be based out of our RemoteEngine facility located at
+        Bangalore, India Office (BANGALORE), provided that such location is subject to change at the Company's
+        discretion.
+    </p>
+
+    <p><b class="text-dark">Probationary Period, Duration and Termination</b><br>
+        You will be on probation for a period of {{monthNumber}} months from the start date of your employment. During
+        probation, the notice of termination or salary in lieu of notice of termination by either party will be one (1)
+        week. At the end of the {{monthNumber}}-month probation, you are deemed to be confirmed if you have not
+        communicated otherwise in writing.<br>
+        Employment with the Company is for no specific period of time. Both parties may terminate the employment
+        relationship with one month's notice or pay in lieu of notice, except that for "cause," the Company may
+        terminate employment without any notice.<br>
+        Your employment will automatically end, without any notice of termination or other action being required, upon
+        you attaining the state retirement age as prescribed by law.</p>
+
+    <p><b class="text-dark">Working Hours</b><br>
+        This is full-time employment with the Company and will be subject to the rules, regulations, and policies of the
+        Company. The working hours will be {{numberOfHours}} hours per week, during which you will devote yourself
+        exclusively to the business of the Company. You may be required to engage in travel on behalf of the Company and
+        to work at hours required by the nature of the business of the Company. Such reasonable travel and hours of work
+        shall be without additional compensation to the extent permitted by law.</p>
+
+    <p><b class="text-dark">Salary</b><br>
+        Your annual base salary will be <strong>INR {{annualCTC}},</strong> payable monthly in 12 monthly installments
+        in arrears, subject to any deductions provided by law. This figure may be amended from time to time according to
+        Company policy or as provided by law.</p>
+    <p>Payment of salary, commissions, benefits, and official expense reimbursements will be subject to Company
+        policies, local tax laws, and applicable statutory deductions.</p>
+
+    <p><b class="text-dark">Incentive Compensation</b><br>
+        You will be eligible to participate in the RemoteEngine Incentive Compensation Plan ("the Plan"). The annual
+        target incentive compensation payout for your position is approximately 8% of your eligible earnings as defined
+        in the Plan. Target incentives do not constitute a promise of payment. Your actual annual payout may be higher
+        or lower than the target based on overall company profitability and your individual performance and is subject
+        to, and governed by, the terms and conditions of the Plan. RemoteEngine reserves its right to change, suspend,
+        or withdraw the Plan unilaterally.</p>
+
+    <p><b class="text-dark">Benefits</b><br>
+        You will be eligible to participate in the Company benefit plans for India as you qualify for them or as you
+        select to participate in them, subject to the rules of the plans. The Company reserves the right to amend or
+        discontinue such benefit programs at its sole discretion and without compensation for such amendment or
+        discontinuance. Details of the benefits can be found in the Annexure provided with this letter.</p>
+
+    <p><b class="text-dark">Paid Time Off</b><br>
+        In addition to the public holidays, you will be entitled to 18 working days of annual paid time off based on
+        full-time employment. After completion of 5 years of service, you will be entitled to a maximum of 21 working
+        days of annual paid time off. Such leave will be availed at mutually agreed times or as determined by law. If
+        the employment commences or terminates in the course of a calendar year, you will be entitled to a prorated
+        number of days. Further details are specified in the Company's Leave Policy and Guidelines.</p>
+
+    <p><b class="text-dark">Confidentiality</b><br>
+        You agree and acknowledge that you have an absolute duty, both during and after your employment, to maintain and
+        safeguard any confidential information which you are entrusted with or exposed to during your employment with
+        the Company. You agree that such confidential information is the property of the Company and you will hold it in
+        trust for the Company's benefit, and you will not share it directly or indirectly with any third party. For the
+        purpose of this letter, confidential information means any information or matter, written or oral, which is not
+        in the public domain and which relates to the business and/or affairs of the Company, any affiliated company, or
+        any of its business contacts which the company designates as being confidential or which under the circumstances
+        surrounding disclosure ought to be treated as confidential by you.</p>
+
+    <p><b class="text-dark">Non-solicitation</b><br>
+        Without the prior written consent of the Company, you will not, within a period of 1 year after the end of your
+        employment, directly or indirectly, individually or on behalf of any person solicit or induce or assist in any
+        manner in the solicitation or inducement of any employee, contractor, or consultant of the Company or any
+        affiliate company to render services to or for your benefit or that of another person.</p>
+    <p>You agree that damages will not afford an adequate remedy in case of a breach of the obligations contained in
+        this above paragraph, and accordingly, the Company may apply for injunctive relief (including ex-parte relief)
+        in the event of such a breach.</p>
+
+    <p><b class="text-dark">Pre-Boarding Documentation and Pre-Employment Screening</b><br>
+        The Company works with sensitive technologies controlled under various countries' export laws and associated
+        regulations. You will need to complete, among others, the RemoteEngine Export Control Disclosure & Contract, as
+        it might be necessary for RemoteEngine to secure export licenses. The Company's HR department or your hiring
+        manager will notify you if a license is required and whether the Company will apply for a license on your
+        behalf.</p>
+    <p>This offer of employment is contingent upon your satisfactorily completing, agreeing to, signing, and otherwise
+        fulfilling the following documents and associated clearance processes as determined at the Company's sole
+        discretion, which will be provided to you in the Pre-Boarding tool referenced below:</p>
+    <ol type="a">
+        <li>RemoteEngine Code of Conduct & Conflicts of Interest Certification</li>
+        <li>RemoteEngine Proprietary Information & Inventions Contract and Disclosure</li>
+        <li>RemoteEngine Data Protection Authorization Form</li>
+    </ol>
+    <p>In addition, your employment is conditional upon a satisfactory pre-employment screening, including but not
+        limited to the legally required proof of your identity and authorization to work in the Republic of India.</p>
+
+    <p><b class="text-dark">Final Provisions</b><br>
+        This offer letter and the documents referred to within it set forth the terms of your employment with the
+        Company and supersedes any prior representations or contracts, whether written or oral. This offer will expire
+        in 7 working days from the date of receiving this offer letter. Please sign the offer letter, including
+        Annexure, and complete and electronically sign the RemoteEngine Export Control Disclosure & Contract on or prior
+        to the expiration date of this offer. Once you accept this offer and join the Company at a mutually acceptable
+        date, this letter will serve as your formal employment contract.</p>
+    <p>You will comply with the Company's Code of Conduct and the related guidelines, policies, rules, and regulations
+        of the Company, including but not limited to work rules and any laws related to your employment.</p>
+    <p>You will not, without the written consent of the Company, in any way directly or indirectly, during the course of
+        your employment, (i) be engaged or employed in, or (ii) concerned with (in any capacity whatsoever) or (iii)
+        provide services to, any other business or organization conflicting with the interests of the Company.</p>
+    <p>If any declaration given or provided by you to the Company proves to be false or if you are found to have
+        willfully suppressed or concealed any material information, your employment may be terminated without any
+        notice. The Company does not want you to bring with you any confidential or proprietary material of any former
+        employer or to violate any other obligation you may have towards your former employers.</p>
+    <p>If anyone or more of the provisions contained in this Offer Letter or any document executed in connection
+        herewith will be invalid, illegal, or unenforceable in any respect pursuant to any applicable law, the validity,
+        legality, and enforceability of the remaining provisions contained herein will not in any way be affected or
+        impaired.</p>
+
+    <p>We look forward to having you join us. Shortly you will receive a "Welcome" email with login instructions asking
+        you to log in to the RemoteEngine Pre-Boarding tool. The tool provides a preview of RemoteEngine's values and
+        principles and contains the forms which need to be completed before your start date.</p>
+    <p>You can also join the #SuperhumansAtWork conversations on social media as we highlight employees and events
+        around the globe. If you have any questions, please contact us.</p>
+
+    <p><strong>Sincerely,</strong></p>
+
+    <div class="signature-line"></div>
+    <p><strong>{{hrName}}</strong></p>
+    <p><strong>HR Manager</strong></p>
+
+    <p><b class="text-dark">Salary Structure</b><br>
+    <table>
+        <thead>
+            <tr>
+                <th>Salary Components</th>
+                <th>Monthly (INR)</th>
+                <th>Annually (INR)</th>
+                <th>Explanation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Basic Salary</td>
+                <td>{{bsm}} </td>
+                <td>{{bs}} </td>
+                <td>50% OF CTC</td>
+            </tr>
+            <tr>
+                <td>HRA</td>
+                <td>{{hram}} </td>
+                <td>{{hra}} </td>
+                <td>50% OF BASIC</td>
+            </tr>
+            <tr>
+                <td>Special Allowance</td>
+                <td>{{sam}}</td>
+                <td>{{sa}} </td>
+                <td>BALANCE FIGURE</td>
+            </tr>
+            <tr>
+                <td>Gross Salary</td>
+                <td>{{ctc}}</td>
+                <td>{{ctc}}</td>
+                <td>Basic + allowances</td>
+            </tr>
+            <tr>
+                <td>Total Deductions</td>
+                <td>{{hrInput}}</td>
+                <td>{{hrInput}}</td>
+                <td>{{deductionDescription}}</td>
+            </tr>
+            <tr>
+                <td><strong>Net Pay (Salary in Hand)</strong></td>
+                <td><strong>{{npm}} </strong></td>
+                <td><strong>{{np}} </strong></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><b class="text-dark">Other Benefits</b><br>
+    <ul>
+        {{#if incentiveEligible}}
+        <li>Employees in the Sales & Marketing Specialist role are eligible for a {{numberOfPercentage}}% incentive on
+            every successful customer onboarding</li>
+        {{/if}}
+        <li>Employee Stock Purchase Plan (ESPP) Participation</li>
+        <li>Sick Leave: 12 days paid per completed service year</li>
+        <li>National & Festival Holidays: 10 paid National & Festival Holidays plus 1 floater Holiday per year</li>
+        <li>VTO (Voluntary Time Off): All full-time RemoteEngine employees may take up to Two days (24 hours) of time
+            off per calendar year during regular business hours to volunteer with a non-profit organization or school,
+            to assist with disaster relief or to participate in other community volunteer activities.</li>
+    </ul>
+
+    <p><b class="text-dark">Offer understood and accepted.</b><br>
+    <div class="signature-line"></div>
+    <p><strong>{{candidateName}}</strong></p>
+    <p><strong>Signature & Date</strong></p>
+
+    <p><b class="text-dark">Start Date Confirmation:</b><br>
+        Your Start date at RemoteEngine can only be on a Monday, and please confirm with your Recruiter and New Manager
+        when you have a confirmed date.</p>
+    <p><strong>Note:</strong> Your onboarding formalities will be done virtually. Please expect emails from
+        shivani@remoteengine.co or team@remoteengine.co RemoteEngine Finance & RemoteEngine IT containing the onboarding
+        schedule and Teams meeting details.</p>
+
+    <p><b class="text-dark">List of Mandatory documents that need to be submitted on your start date</b><br>
+    <ul>
+        <li>Copy of Relieving letter from your company/Resignation Acceptance from Authorized Signatory that mentions
+            your last working day (Not Applicable for New College Graduates)</li>
+        <li>Copy of Form F Gratuity, Form I Payment of Wages, and Form PF Provident Fund (Remember to Download & save
+            before submitting them when completing the forms online on the Preboarding tool)</li>
+    </ul>
+
+    <p>I acknowledge the receipt of this letter</p>
+    <div class="signature-line"></div>
+    <p><strong>Signature & Date</strong></p>
+</body>
+
+</html>

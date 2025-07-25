@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-extraneous-require
 const Redis = require('ioredis');
 const config = require('./config');
 const { logger } = require('./logger');
@@ -7,8 +8,8 @@ const getRedisConfig = () => {
   return {
     host: config.redis.host,
     port: config.redis.port,
-    password: config.redis.password,
-    db: config.redis.db,
+    // password: config.redis.password,
+    // db: config.redis.db,
     enableReadyCheck: false,
     maxRetriesPerRequest: 3,
     retryDelayOnFailover: 100,

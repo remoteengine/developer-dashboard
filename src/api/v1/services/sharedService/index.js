@@ -29,4 +29,19 @@ const getCountryList = async () => fetchAllFromCollection('shared_countries', 'c
 const getSkillList = async () => fetchAllFromCollection('skills', 'skills');
 const getEorRequest = async () => fetchAllFromCollection('eorrequests', 'eor requests');
 
-module.exports = { getCountryList, getSkillList, getEorRequest };
+const getEorRequestByEmail = async email => {
+  await ensureDbConnected();
+  const collection = customerDashboardConnection.db.collection('eorrequests');
+  const eorRequest = await collection.findOne({ email });
+  return eorRequest;
+};
+
+const getQuoteSummaryByContractId = async (contractId, eorId) => {
+  await ensureDbConnected();
+  const collection = customerDashboardConnection.db.collection('quotesummaries');
+  const quoteSummary = await collection.find({ contractId, eorId }).sort({ createdAt: -1 }).limit(1).toArray();
+  return quoteSummary;
+};
+
+
+module.exports = { getCountryList, getSkillList, getEorRequest, getEorRequestByEmail, getQuoteSummaryByContractId };
