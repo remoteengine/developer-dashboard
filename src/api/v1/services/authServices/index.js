@@ -90,11 +90,12 @@ const emailRegisterService = async ({
   password
 }) => {
   try {
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       if (!existingUser.isVerified) {
         const otpResult = await otpService.generateAndSendOTP(
-          email,
+          normalizedEmail,
           firstName,
           'register'
         );
@@ -106,7 +107,7 @@ const emailRegisterService = async ({
         return {
           success: true,
           message: 'User already registered but not verified. OTP sent again.',
-          email
+          email: normalizedEmail
         };
       }
       throw new ApiError('User already exists with this email', 400);
@@ -115,7 +116,7 @@ const emailRegisterService = async ({
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new developer({
-      email,
+      email: normalizedEmail,
       firstName,
       lastName,
       password: hashedPassword,
@@ -126,14 +127,14 @@ const emailRegisterService = async ({
     const savedUser = await newUser.save();
 
     const otpResult = await otpService.generateAndSendOTP(
-      email,
+      normalizedEmail,
       firstName,
       'register'
     );
     return {
       success: true,
       message: otpResult.message,
-      email,
+      email: normalizedEmail,
       userId: savedUser._id,
       otp: otpResult.otp
     };
@@ -144,13 +145,14 @@ const emailRegisterService = async ({
 
 const verifyEmailAndCreateUser = async ({ email, otp }) => {
   try {
-    const otpVerification = await otpService.verifyOTP(email, otp, 'register');
+    const normalizedEmail = email.toLowerCase();
+    const otpVerification = await otpService.verifyOTP(normalizedEmail, otp, 'register');
 
     if (!otpVerification.success) {
       throw new ApiError(otpVerification.message, 400);
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       throw new ApiError('User not found. Please register again.', 400);
@@ -165,7 +167,7 @@ const verifyEmailAndCreateUser = async ({ email, otp }) => {
 
     // Send welcome email via Bull queue to AWS SES
     const welcomeEmailData = {
-      to: email,
+      to: normalizedEmail,
       subject: 'Welcome to RemoteEngine! 🎉',
       htmlContent: generateWelcomeEmailHTML(user.firstName),
       textContent: `Hi ${user.firstName}, Welcome to RemoteEngine! Your account has been successfully created and verified. Next steps: Complete your profile setup, Explore available opportunities, Connect with the community. Best regards, RemoteEngine Team`
@@ -190,7 +192,8 @@ const verifyEmailAndCreateUser = async ({ email, otp }) => {
 const resendRegistrationOTP = async ({ email }) => {
   try {
     // Check if user exists in database
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       throw new ApiError('User not found. Please register first.', 400);
@@ -202,7 +205,7 @@ const resendRegistrationOTP = async ({ email }) => {
 
     // Generate and send new OTP
     const otpResult = await otpService.generateAndSendOTP(
-      email,
+      normalizedEmail,
       user.firstName,
       'register'
     );
@@ -222,7 +225,8 @@ const resendRegistrationOTP = async ({ email }) => {
 
 const emailLoginService = async ({ email, password }) => {
   try {
-    const user = await User.findOne({ email }).select('+password');
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
     if (!user) {
       throw new ApiError('User not found', 404);
     }
@@ -264,14 +268,15 @@ const emailLoginService = async ({ email, password }) => {
 
 const forgotPasswordService = async ({ email }) => {
   try {
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       throw new ApiError('User not found', 404);
     }
 
     const otpResult = await otpService.generateAndSendOTP(
-      email,
+      normalizedEmail,
       user.firstName,
       'forgot-password'
     );
@@ -293,7 +298,7 @@ const resetPasswordService = async ({ email, otp, newPassword }) => {
   try {
     // Verify OTP first
     const otpVerification = await otpService.verifyOTP(
-      email,
+      normalizedEmail,
       otp,
       'forgot-password'
     );
@@ -303,7 +308,8 @@ const resetPasswordService = async ({ email, otp, newPassword }) => {
     }
 
     // Find user by email
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       throw new ApiError('User not found', 404);

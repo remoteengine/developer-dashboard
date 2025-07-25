@@ -1,5 +1,5 @@
 const HttpResponseHandler = require('../../../../utils/httpResponseHandler');
-const { getCountryList, getSkillList, getEorRequest } = require('../../services/sharedService');
+const { getCountryList, getSkillList, getEorRequest, updateEorRequest } = require('../../services/sharedService');
 
 const getCountryListController = async (req, res) => {
   try {
@@ -36,7 +36,8 @@ const getSkillListController = async (req, res) => {
 
 const getEorRequestController = async (req, res) => {
   try {
-    const eorRequest = await getEorRequest();
+    const userId = req.user.userId;
+    const eorRequest = await getEorRequest(userId);
     return HttpResponseHandler.success(
       res,
       eorRequest,
@@ -48,4 +49,20 @@ const getEorRequestController = async (req, res) => {
   }
 };
 
-module.exports = { getCountryListController, getSkillListController, getEorRequestController };
+const updateEorRequestController = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const eorRequest = await updateEorRequest(userId, req.body);
+    return HttpResponseHandler.success(
+      res,
+      eorRequest,
+      'Eor request updated successfully',
+      200
+    );
+  } catch (error) {
+    return HttpResponseHandler.error(res, error, 'Failed to update eor request', 500);
+  }
+};
+
+
+module.exports = { getCountryListController, getSkillListController, getEorRequestController,updateEorRequestController };

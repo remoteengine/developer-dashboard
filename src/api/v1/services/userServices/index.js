@@ -150,7 +150,8 @@ const getUserById = async (userId, type) => {
         lastName: formattedData.lastName,
         phoneNumber: formattedData.phoneNumber,
         email: formattedData.email,
-        address: formattedData.address || {}
+        address: formattedData.address || {},
+        linkedinUrl: formattedData.linkedinUrl || ''
       };
     } else if (type === 'experience') {
       filteredData = {

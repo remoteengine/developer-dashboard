@@ -1,5 +1,6 @@
 const customerDashboardConnection = require('../../../../config/customerDashboardDb');
 const { logger } = require('../../../../config/logger');
+const User = require('../../../../models/user/user.model');
 
 // Helper to ensure DB connection is ready
 const ensureDbConnected = async () => {
@@ -43,5 +44,32 @@ const getQuoteSummaryByContractId = async (contractId, eorId) => {
   return quoteSummary;
 };
 
+const updateEorRequest = async (userId, body) => {
+  try {
+    const { overAllStatus, ...updateFields } = body;
+    const user = await User.findById(userId);
+    const email = user?.email;
+    if (!email) {
+      throw new Error('User email not found');
+    }
+    await ensureDbConnected();
+    const collection = customerDashboardConnection.db.collection('eorrequests');
+    const eorRequest = await collection.findOne({ email, isCurrentlyActive: true });
+    if (!eorRequest) {
+      throw new Error('Active EOR request not found for this user');
+    }
+    const updateObj = { ...updateFields };
+    if (overAllStatus) { updateObj.overAllStatus = overAllStatus; }
+    const updatedEorRequest = await collection.updateOne(
+      { email, isCurrentlyActive: true },
+      { $set: updateObj }
+    );
+    return updatedEorRequest;
+  } catch (error) {
+    logger.error(`Error updating eor request: ${error}`);
+    throw error;
+  }
+};
 
-module.exports = { getCountryList, getSkillList, getEorRequest, getEorRequestByEmail, getQuoteSummaryByContractId };
+
+module.exports = { getCountryList, getSkillList, getEorRequest, getEorRequestByEmail, getQuoteSummaryByContractId, updateEorRequest };
