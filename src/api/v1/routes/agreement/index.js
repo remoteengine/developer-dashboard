@@ -1,8 +1,21 @@
 const express = require('express');
 const agreementRoute = express.Router();
 
-const { dowmloadAgreement } = require('../../controllers/agreementControllers');
+const {
+  dowmloadAgreement,
+  uploadEorAgreement,
+  getEorAgreement
+} = require('../../controllers/agreementControllers');
+const { uploadSingleFile } = require('../../../../middleware/uploadMiddleware');
 
 agreementRoute.get('/download', dowmloadAgreement);
+
+agreementRoute.post(
+  '/upload-eor-agreement',
+  uploadSingleFile,
+  uploadEorAgreement
+);
+
+agreementRoute.get('/get-eor-agreement', getEorAgreement);
 
 module.exports = agreementRoute;

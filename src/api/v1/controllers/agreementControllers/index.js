@@ -1,5 +1,9 @@
 const HttpResponseHandler = require('../../../../utils/httpResponseHandler');
-const { downloadAgreementService } = require('../../services/agreementService');
+const {
+  downloadAgreementService,
+  uploadEorAgreementService,
+  getEorAgreementService
+} = require('../../services/agreementService');
 
 const dowmloadAgreement = async (req, res) => {
   try {
@@ -13,6 +17,27 @@ const dowmloadAgreement = async (req, res) => {
   }
 };
 
+const uploadEorAgreement = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await uploadEorAgreementService(userId, req.file);
+    return HttpResponseHandler.success(res, result, 200);
+  } catch (error) {
+    HttpResponseHandler.error(res, error);
+  }
+};
+
+const getEorAgreement = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await getEorAgreementService(userId);
+    return HttpResponseHandler.success(res, result, 200);
+  } catch (error) {
+    HttpResponseHandler.error(res, error);
+  }
+};
 module.exports = {
-  dowmloadAgreement
+  dowmloadAgreement,
+  uploadEorAgreement,
+  getEorAgreement
 };

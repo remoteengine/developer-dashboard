@@ -93,11 +93,19 @@ const updateEorRequest = async (userId, body) => {
   }
 };
 
+const getAllEorRequests = async email => {
+  await ensureDbConnected();
+  const collection = customerDashboardConnection.db.collection('eorrequests');
+  const eorRequest = await collection.find({ email }).toArray();
+  return eorRequest;
+};
+
 module.exports = {
   getCountryList,
   getSkillList,
   getEorRequestByEmail,
   getQuoteSummaryByContractId,
   updateEorRequest,
-  getEorRequestByUserId
+  getEorRequestByUserId,
+  getAllEorRequests
 };

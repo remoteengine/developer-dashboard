@@ -4,7 +4,8 @@ const Address = require('../../../../models/address/address.model');
 const { ApiError } = require('../../../../utils/errorHandler');
 const {
   getEorRequestByEmail,
-  getQuoteSummaryByContractId
+  getQuoteSummaryByContractId,
+  getAllEorRequests
 } = require('../sharedService');
 const path = require('path');
 const fs = require('fs');
@@ -13,6 +14,9 @@ const {
 } = require('../../../../utils/emailService/agreementTemplate');
 const crypto = require('crypto');
 const convertHtmlToPdf = require('../../../../utils/emailService/convertHtmlToPdf');
+const { uploadFileToS3 } = require('../../../../utils/s3Service');
+const customerDashboardConnection = require('../../../../config/customerDashboardDb');
+const { logger } = require('../../../../config/logger');
 
 const getExchangeRate = async () => {
   try {
@@ -149,6 +153,86 @@ const downloadAgreementService = async userId => {
   }
 };
 
+/**
+ * Upload EOR Agreement, update EOR request in customer dashboard DB, and send email with S3 URL
+ */
+const uploadEorAgreementService = async (userId, file) => {
+  try {
+
+    // Get user email
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError('User not found', 404);
+    }
+
+    // Upload to S3
+    const uploadResult = await uploadFileToS3(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      'agreements',
+      userId
+    );
+
+    const email = user.email;
+
+    // Update uploadAgreement in customer dashboard eorrequests
+    await new Promise((resolve, reject) => {
+      if (customerDashboardConnection.readyState !== 1) {
+        customerDashboardConnection.once('connected', resolve);
+        customerDashboardConnection.once('error', reject);
+      } else {
+        resolve();
+      }
+    });
+    const collection = customerDashboardConnection.db.collection('eorrequests');
+    const eorRequest = await collection.findOne({
+      email,
+      isCurrentlyActive: true
+    });
+    if (!eorRequest) {
+      throw new ApiError(
+        'Active EOR request not found in customer dashboard',
+        404
+      );
+    }
+    const uploadAgreement = {
+      fileName: uploadResult.fileName,
+      fileUrl: uploadResult.fileUrl,
+      uploadedAt: new Date()
+    };
+    await collection.updateOne(
+      { email, isCurrentlyActive: true },
+      { $set: { uploadAgreement } }
+    );
+    return {
+      success: true,
+      fileUrl: uploadResult.fileUrl,
+      fileName: uploadResult.fileName
+    };
+  } catch (error) {
+    logger.error('Error in uploadEorAgreementService:', error);
+    throw new ApiError(error.message, error.statusCode || 500);
+  }
+};
+
+const getEorAgreementService = async userId => {
+  try {
+    const user = await User.findById(userId);
+    const email = user.email;
+    const eorRequest = await getAllEorRequests(email);
+    if (!eorRequest) {
+      throw new ApiError('EOR request not found', 404);
+    }
+    return eorRequest;
+  } catch (error) {
+    logger.error('Error in getEorAgreementService:', error);
+    throw new ApiError(error.message, error.statusCode || 500);
+  }
+};
+
 module.exports = {
-  downloadAgreementService
+  downloadAgreementService,
+  uploadEorAgreementService,
+  getEorAgreementService
 };
