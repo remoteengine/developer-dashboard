@@ -96,8 +96,38 @@ const updateEorRequest = async (userId, body) => {
 const getAllEorRequests = async email => {
   await ensureDbConnected();
   const collection = customerDashboardConnection.db.collection('eorrequests');
-  const eorRequest = await collection.find({ email }).toArray();
-  return eorRequest;
+  const eorRequests = await collection.find({ email }).toArray();
+
+  // Map quote summaries to each EOR request
+  const eorRequestsWithQuotes = await Promise.all(
+    eorRequests.map(async (eorRequest) => {
+      try {
+        if (eorRequest.contractId && eorRequest.eorId) {
+          const quoteSummaries = await getQuoteSummaryByContractId(
+            eorRequest.contractId,
+            eorRequest.eorId
+          );
+          return {
+            ...eorRequest,
+            latestQuoteSummary: quoteSummaries.length > 0 ? quoteSummaries[0] : null
+          };
+        } else {
+          return {
+            ...eorRequest,
+            latestQuoteSummary: null
+          };
+        }
+      } catch (error) {
+        logger.error(`Error fetching quote summary for EOR request ${eorRequest._id}: ${error}`);
+        return {
+          ...eorRequest,
+          latestQuoteSummary: null
+        };
+      }
+    })
+  );
+
+  return eorRequestsWithQuotes;
 };
 
 module.exports = {
