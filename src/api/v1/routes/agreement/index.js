@@ -10,7 +10,7 @@ const { uploadSingleFile } = require('../../../../middleware/uploadMiddleware');
 
 agreementRoute.get('/download', dowmloadAgreement);
 
-agreementRoute.post(
+agreementRoute.put(
   '/upload-eor-agreement',
   uploadSingleFile,
   uploadEorAgreement
